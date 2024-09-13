@@ -261,7 +261,7 @@ async def sell_option():
 def asset_parse(asset: str):
     """
 
-    :param asset: str: 
+    :param asset: str:
 
     """
     new_asset = f"{asset[:3]}/{asset[3:]}"

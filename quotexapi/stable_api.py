@@ -102,7 +102,7 @@ class Quotex(object):
     def set_session(self, user_agent: str, cookies: str = None, ssid: str = None):
         """
 
-        :param user_agent: str: 
+        :param user_agent: str:
         :param cookies: str:  (Default value = None)
         :param ssid: str:  (Default value = None)
 
@@ -223,7 +223,7 @@ class Quotex(object):
     def change_account(self, balance_mode: str):
         """Change active account `real` or `practice`
 
-        :param balance_mode: str: 
+        :param balance_mode: str:
 
         """
         self.account_is_demo = 0 if balance_mode.upper() == "REAL" else 1
@@ -360,7 +360,7 @@ class Quotex(object):
     def start_candles_stream(self, asset, period=0):
         """
 
-        :param asset: 
+        :param asset:
         :param period:  (Default value = 0)
 
         """
@@ -370,7 +370,7 @@ class Quotex(object):
     def stop_candles_stream(self, asset):
         """
 
-        :param asset: 
+        :param asset:
 
         """
         self.api.unsubscribe_realtime_candle(asset)
@@ -383,7 +383,7 @@ class Quotex(object):
     def get_realtime_candles(self, asset):
         """
 
-        :param asset: 
+        :param asset:
 
         """
         while True:

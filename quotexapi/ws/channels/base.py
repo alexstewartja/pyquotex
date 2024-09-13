@@ -17,7 +17,7 @@ class Base(object):
         """Send request to Quotex server websocket.
 
         :param str: data: The websocket channel data.
-        :param data: 
+        :param data:
         :returns: The instance of :class:`requests.Response`.
 
         """
@@ -28,7 +28,7 @@ class Base(object):
     ):
         """
 
-        :param action: str: 
+        :param action: str:
         :param payload: Optional[str | dict]:  (Default value = None)
         :param no_force_send:  (Default value = True)
 

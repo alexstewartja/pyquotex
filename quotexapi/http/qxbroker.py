@@ -34,8 +34,8 @@ async def fill_form(sb: SB, email, password):
 def fill_code_form(sb, code):
     """
 
-    :param sb: 
-    :param code: 
+    :param sb:
+    :param code:
 
     """
     pin_code_selector = 'form.auth__form input[name="code"]'

@@ -56,8 +56,8 @@ ssl_context.load_verify_locations(certifi.where())
 def nested_dict(n, type):
     """
 
-    :param n: 
-    :param type: 
+    :param n:
+    :param type:
 
     """
     if n == 1:
@@ -165,7 +165,7 @@ class QuotexAPI(object):
     def subscribe_realtime_candle(self, asset, period: int = 60):
         """
 
-        :param asset: 
+        :param asset:
         :param period: int:  (Default value = 60)
 
         """
@@ -177,7 +177,7 @@ class QuotexAPI(object):
     def follow_asset(self, asset):
         """
 
-        :param asset: 
+        :param asset:
 
         """
         return self.send_wss_payload("instruments/follow", asset)
@@ -185,7 +185,7 @@ class QuotexAPI(object):
     def follow_candle(self, asset):
         """
 
-        :param asset: 
+        :param asset:
 
         """
         return self.send_wss_payload("depth/follow", asset)
@@ -193,7 +193,7 @@ class QuotexAPI(object):
     def unfollow_candle(self, asset):
         """
 
-        :param asset: 
+        :param asset:
 
         """
         return self.send_wss_payload("depth/unfollow", asset)
@@ -201,7 +201,7 @@ class QuotexAPI(object):
     def unsubscribe_realtime_candle(self, asset):
         """
 
-        :param asset: 
+        :param asset:
 
         """
         return self.send_wss_payload("subfor", asset)
@@ -209,7 +209,7 @@ class QuotexAPI(object):
     def get_chart_notifications(self, asset, version: str = "1.0.0"):
         """
 
-        :param asset: 
+        :param asset:
         :param version: str:  (Default value = "1.0.0")
 
         """
@@ -220,7 +220,7 @@ class QuotexAPI(object):
     def switch_to_asset(self, asset: str, duration: int = 60):
         """
 
-        :param asset: str: 
+        :param asset: str:
         :param duration: int:  (Default value = 60)
 
         """
@@ -260,7 +260,7 @@ class QuotexAPI(object):
     def edit_training_balance(self, amount):
         """
 
-        :param amount: 
+        :param amount:
 
         """
         self.refill_demo_balance(amount)
@@ -268,7 +268,7 @@ class QuotexAPI(object):
     def refill_demo_balance(self, amount):
         """
 
-        :param amount: 
+        :param amount:
 
         """
         self.send_wss_payload("demo/refill", amount)
@@ -281,7 +281,7 @@ class QuotexAPI(object):
     def change_account(self, account_type):
         """
 
-        :param account_type: 
+        :param account_type:
 
         """
         self.change_account_type(account_type)
@@ -289,7 +289,7 @@ class QuotexAPI(object):
     def change_account_type(self, account_type):
         """
 
-        :param account_type: 
+        :param account_type:
 
         """
         self.account_type = account_type
@@ -306,7 +306,7 @@ class QuotexAPI(object):
     def simulate_asset_switch(self, asset: str, duration: int = 60, version="1.0.0"):
         """
 
-        :param asset: str: 
+        :param asset: str:
         :param duration: int:  (Default value = 60)
         :param version:  (Default value = "1.0.0")
 
@@ -389,7 +389,7 @@ class QuotexAPI(object):
         :param dict: data: (optional) The http request data.
         :param dict: params: (optional) The http request params.
         :param dict: headers: (optional) The http request headers.
-        :param method: 
+        :param method:
         :param data:  (Default value = None)
         :param params:  (Default value = None)
         :param headers:  (Default value = None)
@@ -461,7 +461,7 @@ class QuotexAPI(object):
 
         :param str: data: The websocket request data.
         :param bool: no_force_send: Default True.
-        :param data: 
+        :param data:
         :param no_force_send:  (Default value = True)
 
         """
@@ -482,7 +482,7 @@ class QuotexAPI(object):
         :param str: action: wss action being performed, ex. "tick"
         :param Any: payload: json/dict payload to send with specified action
         :param bool: no_force_send: Specify whether to wait for write lock
-        :param action: str: 
+        :param action: str:
         :param payload: Optional[str | dict]:  (Default value = None)
         :param no_force_send:  (Default value = True)
 
@@ -643,7 +643,7 @@ class QuotexAPI(object):
     def get_request_id_from_order_id(self, order_id) -> Optional[str]:
         """
 
-        :param order_id: 
+        :param order_id:
 
         """
         order = self.get_order_by_id(order_id=order_id)

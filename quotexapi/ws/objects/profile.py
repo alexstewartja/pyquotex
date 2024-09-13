@@ -37,7 +37,7 @@ class Profile(Base):
     def nick_name(self, nick_name):
         """Method to set nick_name value.
 
-        :param nick_name: 
+        :param nick_name:
 
         """
         self.__nick_name = nick_name
@@ -56,7 +56,7 @@ class Profile(Base):
     def live_balance(self, live_balance):
         """Method to set live_balance value.
 
-        :param live_balance: 
+        :param live_balance:
 
         """
         self.__live_balance = live_balance
@@ -75,7 +75,7 @@ class Profile(Base):
     def profile_id(self, profile_id):
         """Method to set profile value.
 
-        :param profile_id: 
+        :param profile_id:
 
         """
         self.__profile_id = profile_id
@@ -94,7 +94,7 @@ class Profile(Base):
     def demo_balance(self, demo_balance):
         """Method to set demo_balance value.
 
-        :param demo_balance: 
+        :param demo_balance:
 
         """
         self.__demo_balance = demo_balance
@@ -113,7 +113,7 @@ class Profile(Base):
     def avatar(self, avatar):
         """Method to set avatar value.
 
-        :param avatar: 
+        :param avatar:
 
         """
         self.__avatar = avatar
@@ -127,7 +127,7 @@ class Profile(Base):
     def msg(self, msg):
         """
 
-        :param msg: 
+        :param msg:
 
         """
         self.__msg = msg
@@ -141,7 +141,7 @@ class Profile(Base):
     def currency_symbol(self, currency_symbol):
         """
 
-        :param currency_symbol: 
+        :param currency_symbol:
 
         """
         self.__currency_symbol = currency_symbol
@@ -155,7 +155,7 @@ class Profile(Base):
     def country(self, country):
         """
 
-        :param country: 
+        :param country:
 
         """
         self.__country = country
@@ -169,7 +169,7 @@ class Profile(Base):
     def country_name(self, country_name):
         """
 
-        :param country_name: 
+        :param country_name:
 
         """
         self.__country_name = country_name
@@ -183,7 +183,7 @@ class Profile(Base):
     def country_ip(self, country_ip):
         """
 
-        :param country_ip: 
+        :param country_ip:
 
         """
         self.__country_ip = country_ip
@@ -197,7 +197,7 @@ class Profile(Base):
     def lang(self, lang):
         """
 
-        :param lang: 
+        :param lang:
 
         """
         self.__lang = lang
@@ -211,7 +211,7 @@ class Profile(Base):
     def time_offset(self, time_offset):
         """
 
-        :param time_offset: 
+        :param time_offset:
 
         """
         self.__time_offset = time_offset
@@ -225,7 +225,7 @@ class Profile(Base):
     def minimum_amount(self, minimum_amount):
         """
 
-        :param minimum_amount: 
+        :param minimum_amount:
 
         """
         if self.__currency_code.upper() == "BRL":
@@ -241,7 +241,7 @@ class Profile(Base):
     def currency_code(self, currency_code):
         """
 
-        :param currency_code: 
+        :param currency_code:
 
         """
         self.__currency_code = currency_code
@@ -257,7 +257,7 @@ class Profile(Base):
     def profile_level(self, profile_level):
         """
 
-        :param profile_level: 
+        :param profile_level:
 
         """
         self.__profile_level = profile_level

@@ -44,7 +44,7 @@ if not user_data_dir.strip():
 def load_session(user_agent):
     """
 
-    :param user_agent: 
+    :param user_agent:
 
     """
     output_file = Path(resource_path("session.json"))
@@ -63,7 +63,7 @@ def load_session(user_agent):
 def update_session(session_data):
     """
 
-    :param session_data: 
+    :param session_data:
 
     """
     output_file = Path(resource_path("session.json"))
@@ -76,7 +76,7 @@ def update_session(session_data):
 def resource_path(relative_path: str | Path) -> Path:
     """
 
-    :param relative_path: str | Path: 
+    :param relative_path: str | Path:
 
     """
     global base_dir

@@ -46,8 +46,8 @@ class WebsocketClient(object):
     def on_message(self, wss, message):
         """Method to process websocket messages.
 
-        :param wss: 
-        :param message: 
+        :param wss:
+        :param message:
 
         """
         global_value.ssl_Mutual_exclusion = True
@@ -172,8 +172,8 @@ class WebsocketClient(object):
     def on_error(self, wss, error):
         """Method to process websocket errors.
 
-        :param wss: 
-        :param error: 
+        :param wss:
+        :param error:
 
         """
         logger.error(error)
@@ -184,7 +184,7 @@ class WebsocketClient(object):
         """Method to process websocket open. It is necessary to perform exact warm-up requests,
         circumventing bot detection
 
-        :param wss: 
+        :param wss:
 
         """
         logger.info("Websocket client connected.")
@@ -194,9 +194,9 @@ class WebsocketClient(object):
     def on_close(self, wss, close_status_code, close_msg):
         """Method to process websocket close.
 
-        :param wss: 
-        :param close_status_code: 
-        :param close_msg: 
+        :param wss:
+        :param close_status_code:
+        :param close_msg:
 
         """
         logger.info("Websocket connection closed.")
@@ -205,8 +205,8 @@ class WebsocketClient(object):
     def on_ping(self, wss, ping_msg):
         """
 
-        :param wss: 
-        :param ping_msg: 
+        :param wss:
+        :param ping_msg:
 
         """
         pass
@@ -214,8 +214,8 @@ class WebsocketClient(object):
     def on_pong(self, wss, pong_msg):
         """
 
-        :param wss: 
-        :param pong_msg: 
+        :param wss:
+        :param pong_msg:
 
         """
         self.wss.send("2")

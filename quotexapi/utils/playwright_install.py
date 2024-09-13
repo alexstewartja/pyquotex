@@ -22,8 +22,8 @@ def install(
     :type browser_type: SyncBrowserType | AsyncBrowserType
     :param with_deps: install with dependencies. Defaults to `False`.
     :type with_deps: bool
-    :param browser_type: SyncBrowserType | AsyncBrowserType: 
-    :param *: 
+    :param browser_type: SyncBrowserType | AsyncBrowserType:
+    :param *:
     :param with_deps: bool:  (Default value = False)
     :returns: succeeded or failed
     :rtype: bool
