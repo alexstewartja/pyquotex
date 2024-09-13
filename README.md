@@ -30,27 +30,24 @@ This group was created so that members can help each other, ask questions, and c
 
 Feel free to join the group and contribute with your questions and knowledge.
 
-
-
 ### Important note
+
 For some reason, cloudflare ends up identifying automated access to the quotex API and we
 applies a block, which prevents successful authentication on the platform using a user
 and password, I recommend using Python 3.8 or higher to be successful with this API.
 For Windows users it is necessary to install the latest possible openssl, which can be obtained
 here [Openssl-Windows](https://slproweb.com/products/Win32OpenSSL.html) .
 For Linux users, the latest possible versions of openssl are also recommended, simply
-just run ```sudo apt install openssl```.
+just run `sudo apt install openssl`.
 
 ## Let`s Go to the Private Repository
+
 [!["Buy Me A Coffee"](https://www.buymeacoffee.com/assets/img/custom_images/orange_img.png)](https://www.buymeacoffee.com/cleiton.leonel)
-
-
 
 https://github.com/user-attachments/assets/acaa0cbb-80c2-450c-9c8f-83fdbfedf0fa
 
-
-
 ### Install
+
 ```shell
 git clone https://github.com/cleitonleonel/pyquotex.git
 cd pyquotex
@@ -59,11 +56,13 @@ python3 app.py
 ```
 
 ### Install by pip
+
 ```shell
 pip install git+https://github.com/cleitonleonel/pyquotex.git
 ```
 
 ### Import as lib
+
 ```python
 from quotexapi.stable_api import Quotex
 
@@ -79,7 +78,8 @@ client = Quotex(
 ```
 
 ### Login by email and password
-if connect sucess return True,None  
+
+if connect sucess return True,None
 
 if connect fail return False,None
 
