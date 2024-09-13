@@ -54,6 +54,12 @@ ssl_context.load_verify_locations(certifi.where())
 
 
 def nested_dict(n, type):
+    """
+
+    :param n: 
+    :param type: 
+
+    """
     if n == 1:
         return defaultdict(type)
     else:
@@ -146,37 +152,78 @@ class QuotexAPI(object):
     def websocket(self):
         """Property to get websocket.
 
+
         :returns: The instance of :class:`WebSocket <websocket.WebSocket>`.
+
         """
         return self.websocket_client.wss
 
     def tick(self):
+        """ """
         self.send_wss_payload("tick")
 
     def subscribe_realtime_candle(self, asset, period: int = 60):
+        """
+
+        :param asset: 
+        :param period: int:  (Default value = 60)
+
+        """
         self.realtime_price[asset] = []
         return self.send_wss_payload(
             "instruments/update", {"asset": asset, "period": period}
         )
 
     def follow_asset(self, asset):
+        """
+
+        :param asset: 
+
+        """
         return self.send_wss_payload("instruments/follow", asset)
 
     def follow_candle(self, asset):
+        """
+
+        :param asset: 
+
+        """
         return self.send_wss_payload("depth/follow", asset)
 
     def unfollow_candle(self, asset):
+        """
+
+        :param asset: 
+
+        """
         return self.send_wss_payload("depth/unfollow", asset)
 
     def unsubscribe_realtime_candle(self, asset):
+        """
+
+        :param asset: 
+
+        """
         return self.send_wss_payload("subfor", asset)
 
     def get_chart_notifications(self, asset, version: str = "1.0.0"):
+        """
+
+        :param asset: 
+        :param version: str:  (Default value = "1.0.0")
+
+        """
         self.send_wss_payload(
             "chart_notification/get", {"asset": asset, "version": version}
         )
 
     def switch_to_asset(self, asset: str, duration: int = 60):
+        """
+
+        :param asset: str: 
+        :param duration: int:  (Default value = 60)
+
+        """
         exp_time = (
             get_expiration_time_quotex(int(self.timesync.server_timestamp), duration)
             if "_otc" not in asset
@@ -211,30 +258,59 @@ class QuotexAPI(object):
 
     @deprecated("Use `refill_demo_balance(...)` instead")
     def edit_training_balance(self, amount):
+        """
+
+        :param amount: 
+
+        """
         self.refill_demo_balance(amount)
 
     def refill_demo_balance(self, amount):
+        """
+
+        :param amount: 
+
+        """
         self.send_wss_payload("demo/refill", amount)
 
     def signals_subscribe(self):
+        """ """
         self.send_wss_payload("signal/subscribe")
 
     @deprecated("Use `change_account_type(...)` instead")
     def change_account(self, account_type):
+        """
+
+        :param account_type: 
+
+        """
         self.change_account_type(account_type)
 
     def change_account_type(self, account_type):
+        """
+
+        :param account_type: 
+
+        """
         self.account_type = account_type
         self.send_wss_payload(
             "account/change", {"demo": self.account_type, "tournamentId": 0}
         )
 
     def indicators(self):
+        """ """
         # 42["indicator/change",{"id":"Y5zYtYaUtjI6eUz06YlGF","settings":{"lines":{"main":{"lineWidth":1,"color":"#db4635"}},"ma":"SMA","period":10}}]
         # 42["indicator/delete", {"id": "23507dc2-05ca-4aec-9aef-55939735b3e0"}]
         pass
 
     def simulate_asset_switch(self, asset: str, duration: int = 60, version="1.0.0"):
+        """
+
+        :param asset: str: 
+        :param duration: int:  (Default value = 60)
+        :param version:  (Default value = "1.0.0")
+
+        """
         self.tick()
         self.subscribe_realtime_candle(asset, duration)
         self.get_chart_notifications(asset, version)
@@ -245,45 +321,60 @@ class QuotexAPI(object):
     @property
     def logout(self):
         """Property for get Quotex http login resource.
+
+
         :returns: The instance of :class:`Login
             <quotexapi.http.login.Login>`.
+
         """
         return Logout(self)
 
     @property
     def login(self):
         """Property for get Quotex http login resource.
+
+
         :returns: The instance of :class:`Login
             <quotexapi.http.login.Login>`.
+
         """
         return Login(self)
 
     @property
     def ssid(self):
         """Property for get Quotex websocket ssid channel.
+
+
         :returns: The instance of :class:`Ssid
             <Quotex.ws.channels.ssid.Ssid>`.
+
         """
         return Ssid(self)
 
     @property
     def buy(self):
         """Property for get Quotex websocket ssid channel.
+
+
         :returns: The instance of :class:`Buy
             <Quotex.ws.channels.buy.Buy>`.
+
         """
         return Buy(self)
 
     @property
     def sell_option(self):
+        """ """
         return SellOption(self)
 
     @property
     def get_candles(self):
         """Property for get Quotex websocket candles channel.
 
+
         :returns: The instance of :class:`GetCandles
             <quotexapi.ws.channels.candles.GetCandles>`.
+
         """
         return GetCandles(self)
 
@@ -294,11 +385,16 @@ class QuotexAPI(object):
 
         :param resource: The instance of
         :class:`Resource <quotexapi.http.resource.Resource>`.
-        :param str method: The http request method.
-        :param dict data: (optional) The http request data.
-        :param dict params: (optional) The http request params.
-        :param dict headers: (optional) The http request headers.
+        :param str: method: The http request method.
+        :param dict: data: (optional) The http request data.
+        :param dict: params: (optional) The http request params.
+        :param dict: headers: (optional) The http request headers.
+        :param method: 
+        :param data:  (Default value = None)
+        :param params:  (Default value = None)
+        :param headers:  (Default value = None)
         :returns: The instance of :class:`Response <requests.Response>`.
+
         """
         url = resource.url
         logger.debug(url)
@@ -336,6 +432,11 @@ class QuotexAPI(object):
         return response
 
     def get_profile(self, force=True) -> Profile:
+        """
+
+        :param force:  (Default value = True)
+
+        """
         if not self.profile.profile_id or force:
             profile_data = Settings(self).get_settings().get("data")
             self.profile.nick_name = profile_data["nickname"]
@@ -357,8 +458,12 @@ class QuotexAPI(object):
 
     def send_websocket_request(self, data, no_force_send=True):
         """Send websocket request to Quotex server.
-        :param str data: The websocket request data.
-        :param bool no_force_send: Default True.
+
+        :param str: data: The websocket request data.
+        :param bool: no_force_send: Default True.
+        :param data: 
+        :param no_force_send:  (Default value = True)
+
         """
         while (
             global_value.ssl_Mutual_exclusion or global_value.ssl_Mutual_exclusion_write
@@ -372,11 +477,15 @@ class QuotexAPI(object):
     def send_wss_payload(
         self, action: str, payload: Optional[str | dict] = None, no_force_send=True
     ):
-        """
-        Convenience method to send a payload over websocket to Quotex server.
-        :param str action: wss action being performed, ex. "tick"
-        :param Any payload: json/dict payload to send with specified action
-        :param bool no_force_send: Specify whether to wait for write lock
+        """Convenience method to send a payload over websocket to Quotex server.
+
+        :param str: action: wss action being performed, ex. "tick"
+        :param Any: payload: json/dict payload to send with specified action
+        :param bool: no_force_send: Specify whether to wait for write lock
+        :param action: str: 
+        :param payload: Optional[str | dict]:  (Default value = None)
+        :param no_force_send:  (Default value = True)
+
         """
         data = f'42["{action}"%payload%]'
 
@@ -454,6 +563,11 @@ class QuotexAPI(object):
                 return True, "Websocket token rejected."
 
     def send_ssid(self, timeout=10):
+        """
+
+        :param timeout:  (Default value = 10)
+
+        """
         self.wss_message = None
         if not global_value.SSID:
             return False
@@ -489,16 +603,20 @@ class QuotexAPI(object):
         await self.start_websocket()
 
     def close(self):
+        """ """
         if self.websocket_client:
             self.websocket.close()
             self.websocket_thread.join()
         return True
 
     def websocket_alive(self):
+        """ """
         return self.websocket_thread.is_alive()
 
     def generate_request_id(self):
+        """ """
         def generate_pseudo_random_id():
+            """ """
             return expiration.get_timestamp() + randint(1, 100)
 
         request_id = generate_pseudo_random_id()
@@ -507,6 +625,12 @@ class QuotexAPI(object):
         return request_id
 
     def get_order_by_id(self, order_id=None, request_id=None) -> Optional[dict]:
+        """
+
+        :param order_id:  (Default value = None)
+        :param request_id:  (Default value = None)
+
+        """
         if order_id is not None:
             for request_id, order in self.orders:
                 if "id" in order and order["id"] == order_id:
@@ -517,6 +641,11 @@ class QuotexAPI(object):
         return None
 
     def get_request_id_from_order_id(self, order_id) -> Optional[str]:
+        """
+
+        :param order_id: 
+
+        """
         order = self.get_order_by_id(order_id=order_id)
 
         if order is not None:

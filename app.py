@@ -43,8 +43,10 @@ client.debug_ws_enable = False
 
 
 def get_all_options():
-    return """Opções disponíveis:
-    - test_connection
+    """
+
+
+    :returns: - test_connection
     - get_profile
     - get_balance
     - get_signal_data
@@ -60,6 +62,7 @@ def get_all_options():
     - buy_multiple
     - balance_refill
     - help
+
     """
 
 
@@ -253,6 +256,11 @@ async def sell_option():
 
 
 def asset_parse(asset: str):
+    """
+
+    :param asset: str: 
+
+    """
     new_asset = f"{asset[:3]}/{asset[3:]}"
     if "_otc" in asset:
         return new_asset.replace("_otc", " (OTC)")

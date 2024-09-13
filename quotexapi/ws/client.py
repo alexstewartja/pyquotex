@@ -44,7 +44,12 @@ class WebsocketClient(object):
         )
 
     def on_message(self, wss, message):
-        """Method to process websocket messages."""
+        """Method to process websocket messages.
+
+        :param wss: 
+        :param message: 
+
+        """
         global_value.ssl_Mutual_exclusion = True
         current_time = time.localtime()
         if current_time.tm_sec in [0, 20, 40]:
@@ -165,30 +170,58 @@ class WebsocketClient(object):
         global_value.ssl_Mutual_exclusion = False
 
     def on_error(self, wss, error):
-        """Method to process websocket errors."""
+        """Method to process websocket errors.
+
+        :param wss: 
+        :param error: 
+
+        """
         logger.error(error)
         global_value.websocket_error_reason = str(error)
         global_value.check_websocket_if_error = True
 
     def on_open(self, wss):
         """Method to process websocket open. It is necessary to perform exact warm-up requests,
-        circumventing bot detection"""
+        circumventing bot detection
+
+        :param wss: 
+
+        """
         logger.info("Websocket client connected.")
         global_value.check_websocket_if_connect = 1
         self.warm_up()
 
     def on_close(self, wss, close_status_code, close_msg):
-        """Method to process websocket close."""
+        """Method to process websocket close.
+
+        :param wss: 
+        :param close_status_code: 
+        :param close_msg: 
+
+        """
         logger.info("Websocket connection closed.")
         global_value.check_websocket_if_connect = 0
 
     def on_ping(self, wss, ping_msg):
+        """
+
+        :param wss: 
+        :param ping_msg: 
+
+        """
         pass
 
     def on_pong(self, wss, pong_msg):
+        """
+
+        :param wss: 
+        :param pong_msg: 
+
+        """
         self.wss.send("2")
 
     def warm_up(self):
+        """ """
         asset_name = self.api.current_asset
         period = self.api.current_period
         self.api.tick()

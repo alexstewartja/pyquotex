@@ -11,6 +11,7 @@ config_path = Path(os.path.join(base_dir, "settings/config.ini"))
 
 
 def build_config_path():
+    """ """
     pass
 
 
@@ -41,6 +42,11 @@ if not user_data_dir.strip():
 
 
 def load_session(user_agent):
+    """
+
+    :param user_agent: 
+
+    """
     output_file = Path(resource_path("session.json"))
     if os.path.isfile(output_file):
         with open(output_file) as file:
@@ -55,6 +61,11 @@ def load_session(user_agent):
 
 
 def update_session(session_data):
+    """
+
+    :param session_data: 
+
+    """
     output_file = Path(resource_path("session.json"))
     session_result = json.dumps(session_data, indent=4)
     output_file.write_text(session_result)
@@ -63,6 +74,11 @@ def update_session(session_data):
 
 
 def resource_path(relative_path: str | Path) -> Path:
+    """
+
+    :param relative_path: str | Path: 
+
+    """
     global base_dir
     """Get absolute path to resource, works for dev and for PyInstaller"""
     if getattr(sys, "frozen", False) and hasattr(sys, "_MEIPASS"):

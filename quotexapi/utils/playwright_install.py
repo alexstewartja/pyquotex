@@ -17,12 +17,16 @@ def install(
 ) -> bool:
     """install playwright and deps if needed
 
-    Args:
-        browser_type (SyncBrowserType | AsyncBrowserType): `BrowserType` object. Example: `p.chrome`
-        with_deps (bool, optional): install with dependencies. Defaults to `False`.
+    :param browser_type: `BrowserType` object. Example: `p.chrome`
+    :type browser_type: SyncBrowserType | AsyncBrowserType
+    :param with_deps: install with dependencies. Defaults to `False`.
+    :type with_deps: bool
+    :param browser_type: SyncBrowserType | AsyncBrowserType: 
+    :param *: 
+    :param with_deps: bool:  (Default value = False)
+    :returns: succeeded or failed
+    :rtype: bool
 
-    Returns:
-        bool: succeeded or failed
     """
     driver_executable = str(compute_driver_executable())
     args = [driver_executable, "install-deps"]

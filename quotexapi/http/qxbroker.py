@@ -31,6 +31,12 @@ async def fill_form(sb: SB, email, password):
 
 
 def fill_code_form(sb, code):
+    """
+
+    :param sb: 
+    :param code: 
+
+    """
     pin_code_selector = 'form.auth__form input[name="code"]'
     submit_button_selector = 'form.auth__form .auth__submit button[type="submit"]'
 
@@ -44,6 +50,7 @@ def fill_code_form(sb, code):
 
 
 class Browser(object):
+    """ """
     user_data_dir = None
     base_url = "qxbroker.com"
     https_base_url = f"https://{base_url}"
@@ -138,6 +145,7 @@ class Browser(object):
         )
 
     def success_login(self):
+        """ """
         match = self.html.find("div", {"class": "hint -danger"}) or self.html.find(
             "div", {"class": "hint hint--danger"}
         )

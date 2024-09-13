@@ -18,6 +18,7 @@ logger = logging.getLogger(__name__)
 
 
 class Quotex(object):
+    """ """
 
     def __init__(
         self,
@@ -79,18 +80,29 @@ class Quotex(object):
     @property
     def websocket(self):
         """Property to get websocket.
+
+
         :returns: The instance of :class:`WebSocket <websocket.WebSocket>`.
+
         """
         return self.websocket_client.wss
 
     @staticmethod
     def check_connect():
+        """ """
         if global_value.check_accepted_connection == 1:
             return True
         else:
             return False
 
     def set_session(self, user_agent: str, cookies: str = None, ssid: str = None):
+        """
+
+        :param user_agent: str: 
+        :param cookies: str:  (Default value = None)
+        :param ssid: str:  (Default value = None)
+
+        """
         session = {"cookies": cookies, "token": ssid, "user_agent": user_agent}
         self.session_data = update_session(session)
 
@@ -118,6 +130,7 @@ class Quotex(object):
         return self.api.instruments or []
 
     def get_all_asset_name(self):
+        """ """
         if self.api.instruments:
             return [[i[1], i[2].replace("\n", "")] for i in self.api.instruments]
 
@@ -190,7 +203,11 @@ class Quotex(object):
         return check, reason
 
     def set_account_mode(self, balance_mode="PRACTICE"):
-        """Set active account `real` or `practice`"""
+        """Set active account `real` or `practice`
+
+        :param balance_mode:  (Default value = "PRACTICE")
+
+        """
         if balance_mode.upper() == "REAL":
             self.account_is_demo = 0
         elif balance_mode.upper() == "PRACTICE":
@@ -200,7 +217,11 @@ class Quotex(object):
             exit(1)
 
     def change_account(self, balance_mode: str):
-        """Change active account `real` or `practice`"""
+        """Change active account `real` or `practice`
+
+        :param balance_mode: str: 
+
+        """
         self.account_is_demo = 0 if balance_mode.upper() == "REAL" else 1
         self.api.change_account_type(self.account_is_demo)
 
@@ -333,17 +354,34 @@ class Quotex(object):
         return False
 
     def start_candles_stream(self, asset, period=0):
+        """
+
+        :param asset: 
+        :param period:  (Default value = 0)
+
+        """
         self.api.subscribe_realtime_candle(asset, period)
         self.api.follow_candle(asset)
 
     def stop_candles_stream(self, asset):
+        """
+
+        :param asset: 
+
+        """
         self.api.unsubscribe_realtime_candle(asset)
         self.api.unfollow_candle(asset)
 
     def start_signals_data(self):
+        """ """
         self.api.signals_subscribe()
 
     def get_realtime_candles(self, asset):
+        """
+
+        :param asset: 
+
+        """
         while True:
             if self.api.realtime_price.get(asset):
                 return self.api.realtime_price
@@ -370,9 +408,11 @@ class Quotex(object):
         return self.api.realtime_sentiment.get(asset, {})
 
     def get_signal_data(self):
+        """ """
         return self.api.signal_data
 
     def get_profit(self):
+        """ """
         return self.api.profit_in_operation or 0
 
     async def start_candles_one_stream(self, asset, size):
@@ -431,4 +471,5 @@ class Quotex(object):
                 await asyncio.sleep(0.1)
 
     def close(self):
+        """ """
         return self.api.close()
