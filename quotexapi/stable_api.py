@@ -152,7 +152,8 @@ class Quotex(object):
         self.start_candles_stream(asset, period)
         while True:
             try:
-                self.api.get_candles(asset, index, end_from_time, offset, period)
+                self.api.get_candles(
+                    asset, index, end_from_time, offset, period)
                 while self.check_connect and self.api.candles.candles_data is None:
                     await asyncio.sleep(0.1)
                 if self.api.candles.candles_data is not None:
@@ -229,14 +230,15 @@ class Quotex(object):
     async def get_profile(self):
         return await self.api.get_profile()
 
-    async def buy(self, amount: float, asset: str, direction: str, duration: int, tournament_id:int=0):
+    async def buy(self, amount: float, asset: str, direction: str, duration: int, tournament_id: int = 0):
         """Buy Binary option"""
         request_id = self.api.generate_request_id()
         self.api.buy_id = None
         self.api.current_asset = asset
         self.api.timesync.server_timestamp = time.time()
         self.api.simulate_asset_switch(asset, duration)
-        self.api.buy(amount, asset, direction, duration, request_id, tournament_id)
+        self.api.buy(amount, asset, direction, duration,
+                     request_id, tournament_id)
         count = 0.1
         while 'response' not in self.api.orders[request_id]:
             count += 0.1
@@ -250,7 +252,7 @@ class Quotex(object):
             status = True
         return status, self.api.orders[request_id]
 
-    async def wait_then_buy(self, buy_timestamp: int, asset: str, amount: float, direction: str, duration: int, tournament_id:int=0):
+    async def wait_then_buy(self, buy_timestamp: int, asset: str, amount: float, direction: str, duration: int, tournament_id: int = 0):
         now = get_timestamp()
         time_diff = buy_timestamp - now
         if time_diff > 0:
@@ -286,11 +288,13 @@ class Quotex(object):
     @deprecated('Use `start_remaining_time(...)` instead')
     async def start_remaing_time(self):
         now_stamp = datetime.fromtimestamp(expiration.get_timestamp())
-        expiration_stamp = datetime.fromtimestamp(self.api.timesync.server_timestamp)
+        expiration_stamp = datetime.fromtimestamp(
+            self.api.timesync.server_timestamp)
         remaining_time = int((expiration_stamp - now_stamp).total_seconds())
         while remaining_time >= 0:
             remaining_time -= 1
-            print(f"\rRestando {remaining_time if remaining_time > 0 else 0} segundos ...", end="")
+            print(
+                f"\rRestando {remaining_time if remaining_time > 0 else 0} segundos ...", end="")
             await asyncio.sleep(1)
         await asyncio.sleep(5)
 
@@ -300,13 +304,13 @@ class Quotex(object):
             now_ts = expiration.get_timestamp()
             expiration_ts = int(order['response']['closeTimestamp']) + 5
             remaining_time = expiration_ts - now_ts
-            print(f"Waiting for {order['response']['asset']} until {order['response']['closeTime']}...")
+            print(
+                f"Waiting for {order['response']['asset']} until {order['response']['closeTime']}...")
             while remaining_time >= 0:
                 remaining_time -= 1
                 await asyncio.sleep(1)
             return True
         return False
-
 
     async def check_win(self, order_id):
         """Check win based on order id"""
@@ -393,7 +397,8 @@ class Quotex(object):
         start = time.time()
         while True:
             if time.time() - start > 20:
-                logger.error(f'**error** fail {asset} start_candles_all_size_stream late for 10 sec')
+                logger.error(
+                    f'**error** fail {asset} start_candles_all_size_stream late for 10 sec')
                 return False
             try:
                 if self.api.candle_generated_all_size_check[str(asset)]:
@@ -422,4 +427,3 @@ class Quotex(object):
 
     def close(self):
         return self.api.close()
-

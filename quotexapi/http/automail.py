@@ -20,11 +20,13 @@ async def get_pin(email_address,
     mail.login(imap_username, email_pass)
     mail.select("inbox")
     while attempts > 0:
-        status, email_ids = mail.search(None, f'(FROM "{from_email}", TO "{email_address}")')
+        status, email_ids = mail.search(
+            None, f'(FROM "{from_email}", TO "{email_address}")')
         email_id_list = email_ids[0].split()
 
         if not email_id_list:
-            print(f"No emails found from {from_email} to {email_address} inbox.")
+            print(
+                f"No emails found from {from_email} to {email_address} inbox.")
             mail.logout()
             return None
 
@@ -32,7 +34,7 @@ async def get_pin(email_address,
         raw_email = email_data[0][1]
         msg = email.message_from_bytes(raw_email)
         body = ''
-        
+
         if msg.is_multipart():
             for part in msg.walk():
                 content_disposition = str(part.get("Content-Disposition"))
@@ -40,17 +42,18 @@ async def get_pin(email_address,
                     body += part.get_payload(decode=True).decode()
         else:
             body = msg.get_payload(decode=True).decode()
-        
+
         if body:
             match = re.search(r'<b>(\d+)</b>', body)
             if match:
                 pin_code = match.group(1)
             if pin_code:
                 return pin_code
-            
+
         attempts -= 1
         await asyncio.sleep(1)
 
-    print(f"No authentication PIN-code received from {from_email} to {email_address} inbox.")
+    print(
+        f"No authentication PIN-code received from {from_email} to {email_address} inbox.")
     mail.logout()
     return pin_code

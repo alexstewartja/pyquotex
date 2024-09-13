@@ -117,13 +117,16 @@ class Browser(object):
         match = re.sub("window.settings = ", "", settings)
         token = json.loads(match).get("token")
         self.api.session_data["token"] = token
-        output_file = Path(os.path.join(self.api.resource_path, "session.json"))
+        output_file = Path(os.path.join(
+            self.api.resource_path, "session.json"))
         output_file.parent.mkdir(exist_ok=True, parents=True)
-        cookiejar = requests.utils.cookiejar_from_dict({c['name']: c['value'] for c in cookies})
+        cookiejar = requests.utils.cookiejar_from_dict(
+            {c['name']: c['value'] for c in cookies})
         cookies_string = '; '.join([f'{c.name}={c.value}' for c in cookiejar])
         self.api.session_data["cookies"] = cookies_string
         output_file.write_text(
-            json.dumps({"cookies": cookies_string, "token": token, "user_agent": user_agent}, indent=4)
+            json.dumps({"cookies": cookies_string, "token": token,
+                       "user_agent": user_agent}, indent=4)
         )
 
     def success_login(self):

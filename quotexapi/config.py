@@ -9,8 +9,10 @@ USER_AGENT = "Mozilla/5.0 (X11; Linux x86_64; rv:129.0) Gecko/20100101 Firefox/1
 base_dir = Path(__file__).parent.parent
 config_path = Path(os.path.join(base_dir, "settings/config.ini"))
 
+
 def build_config_path():
     pass
+
 
 if not config_path.exists():
     config_path.parent.mkdir(exist_ok=True, parents=True)
@@ -83,7 +85,6 @@ def update_session(session_data):
         session_result
     )
     return session_data
-
 
 
 def resource_path(relative_path: str | Path) -> Path:

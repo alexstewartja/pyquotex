@@ -67,13 +67,17 @@ class WebsocketClient(object):
                         try:
                             self.api.signal_data[i[0]] = {}
                             self.api.signal_data[i[0]][i[2]] = {}
-                            self.api.signal_data[i[0]][i[2]]["dir"] = i[1][0]["signal"]
-                            self.api.signal_data[i[0]][i[2]]["duration"] = i[1][0]["timeFrame"]
+                            self.api.signal_data[i[0]][i[2]
+                                                       ]["dir"] = i[1][0]["signal"]
+                            self.api.signal_data[i[0]][i[2]
+                                                       ]["duration"] = i[1][0]["timeFrame"]
                         except:
                             self.api.signal_data[i[0]] = {}
                             self.api.signal_data[i[0]][time_in] = {}
-                            self.api.signal_data[i[0]][time_in]["dir"] = i[1][0][1]
-                            self.api.signal_data[i[0]][time_in]["duration"] = i[1][0][0]
+                            self.api.signal_data[i[0]
+                                                 ][time_in]["dir"] = i[1][0][1]
+                            self.api.signal_data[i[0]
+                                                 ][time_in]["duration"] = i[1][0][0]
                 elif message.get("liveBalance") or message.get("demoBalance"):
                     self.api.account_balance = message
                 elif message.get("index"):
@@ -90,7 +94,8 @@ class WebsocketClient(object):
                     self.api.sold_options_respond = message
                 elif message.get("deals"):
                     for deal in message["deals"]:
-                        request_id = self.api.get_request_id_from_order_id(deal['id'])
+                        request_id = self.api.get_request_id_from_order_id(
+                            deal['id'])
                         if request_id:
                             self.api.orders[request_id]['result'] = deal
                             self.api.orders[request_id]['status'] = DEAL_STATUS_WIN if deal['profit'] > 0 else DEAL_STATUS_LOSS
@@ -113,7 +118,8 @@ class WebsocketClient(object):
             except:
                 pass
             if str(message) == "41":
-                logger.info("Evento de desconexão disparado pela plataforma, fazendo reconexão automática.")
+                logger.info(
+                    "Evento de desconexão disparado pela plataforma, fazendo reconexão automática.")
                 global_value.check_websocket_if_connect = 0
             if "51-" in str(message):
                 self.api._temp_status = str(message)

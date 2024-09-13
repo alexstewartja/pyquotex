@@ -46,7 +46,8 @@ cacert = os.environ.get('WEBSOCKET_CLIENT_CA_BUNDLE')
 
 # Configuração do contexto SSL para usar TLS 1.3
 ssl_context = ssl.SSLContext(ssl.PROTOCOL_TLS_CLIENT)
-ssl_context.options |= ssl.OP_NO_TLSv1 | ssl.OP_NO_TLSv1_1 | ssl.OP_NO_TLSv1_2  # Desativar versões TLS mais antigas
+# Desativar versões TLS mais antigas
+ssl_context.options |= ssl.OP_NO_TLSv1 | ssl.OP_NO_TLSv1_1 | ssl.OP_NO_TLSv1_2
 ssl_context.minimum_version = ssl.TLSVersion.TLSv1_3  # Garantir o uso de TLS 1.3
 
 ssl_context.load_verify_locations(certifi.where())
@@ -166,10 +167,12 @@ class QuotexAPI(object):
         return self.send_wss_payload('subfor', asset)
 
     def get_chart_notifications(self, asset, version: str = '1.0.0'):
-        self.send_wss_payload('chart_notification/get', {"asset": asset, "version": version})
+        self.send_wss_payload('chart_notification/get',
+                              {"asset": asset, "version": version})
 
     def switch_to_asset(self, asset: str, duration: int = 60):
-        exp_time = get_expiration_time_quotex(int(self.timesync.server_timestamp), duration) if '_otc' not in asset else duration
+        exp_time = get_expiration_time_quotex(int(
+            self.timesync.server_timestamp), duration) if '_otc' not in asset else duration
         payload = {
             "chartId": "graph",
             "settings": {
@@ -215,7 +218,8 @@ class QuotexAPI(object):
 
     def change_account_type(self, account_type):
         self.account_type = account_type
-        self.send_wss_payload('account/change', {"demo": self.account_type, "tournamentId": 0})
+        self.send_wss_payload(
+            'account/change', {"demo": self.account_type, "tournamentId": 0})
 
     def indicators(self):
         # 42["indicator/change",{"id":"Y5zYtYaUtjI6eUz06YlGF","settings":{"lines":{"main":{"lineWidth":1,"color":"#db4635"}},"ma":"SMA","period":10}}]
@@ -397,8 +401,6 @@ class QuotexAPI(object):
         global_value.SSID = self.session_data.get("token")
         self.is_logged = True
 
-
-
     async def start_websocket(self):
         global_value.check_websocket_if_connect = None
         global_value.check_websocket_if_error = False
@@ -485,7 +487,7 @@ class QuotexAPI(object):
         return self.websocket_thread.is_alive()
 
     def generate_request_id(self):
-        generate_pseudo_random_id = lambda: expiration.get_timestamp() + randint(1, 100)
+        def generate_pseudo_random_id(): return expiration.get_timestamp() + randint(1, 100)
         request_id = generate_pseudo_random_id()
         while request_id in self.orders:
             request_id = generate_pseudo_random_id()

@@ -81,7 +81,8 @@ async def connect(attempts=5):
                     attempt += 1
                     if Path(os.path.join(".", "session.json")).is_file():
                         Path(os.path.join(".", "session.json")).unlink()
-                    print(f"Tentando reconectar, tentativa {attempt} de {attempts}")
+                    print(
+                        f"Tentando reconectar, tentativa {attempt} de {attempts}")
             elif not check:
                 attempt += 1
             else:
@@ -175,9 +176,11 @@ async def buy_and_check_win():
             if status:
                 print("Aguardando resultado...")
                 if await client.check_win(buy_info["id"]):
-                    print(f"\nWin!!! \nVencemos moleque!!!\nLucro: R$ {client.get_profit()}")
+                    print(
+                        f"\nWin!!! \nVencemos moleque!!!\nLucro: R$ {client.get_profit()}")
                 else:
-                    print(f"\nLoss!!! \nPerdemos moleque!!!\nPrejuízo: R$ {client.get_profit()}")
+                    print(
+                        f"\nLoss!!! \nPerdemos moleque!!!\nPrejuízo: R$ {client.get_profit()}")
             else:
                 print("Falha na operação!!!")
         else:
@@ -266,7 +269,8 @@ async def get_candle():
     if check_connect:
         asset = "AUDCAD_otc"
         offset = 86400  # in seconds
-        period = 60  # in seconds [5, 10, 15, 30, 60, 120, 180, 240, 300, 600, 900, 1800, 3600, 14400, 86400]
+        # in seconds [5, 10, 15, 30, 60, 120, 180, 240, 300, 600, 900, 1800, 3600, 14400, 86400]
+        period = 60
         end_from_time = time.time()
         candles = await client.get_candles(asset, end_from_time, offset, period)
         for candle in candles["data"]:
@@ -280,7 +284,8 @@ async def get_candle_progressive():
     if check_connect:
         asset = "EURJPY_otc"
         offset = 3600  # in seconds
-        period = 60  # in seconds [5, 10, 15, 30, 60, 120, 180, 240, 300, 600, 900, 1800, 3600, 14400, 86400]
+        # in seconds [5, 10, 15, 30, 60, 120, 180, 240, 300, 600, 900, 1800, 3600, 14400, 86400]
+        period = 60
         end_from_time = time.time()
         list_candles = []
         size = 10
@@ -410,7 +415,8 @@ async def execute(argument):
         case "balance_refill":
             return await balance_refill()
         case "help":
-            print(f"Uso: {'./app' if getattr(sys, 'frozen', False) else 'python app.py'} <opção>")
+            print(
+                f"Uso: {'./app' if getattr(sys, 'frozen', False) else 'python app.py'} <opção>")
             return print(get_all_options())
         case _:
             return print("Opção inválida. Use 'help' para obter a lista de opções.")
