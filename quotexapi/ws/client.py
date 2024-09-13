@@ -1,4 +1,5 @@
 """Module for Quotex websocket."""
+
 import json
 import time
 import logging
@@ -19,6 +20,7 @@ class WebsocketClient(object):
         trace_ws: Enables and disable `enableTrace` in WebSocket Client.
         """
         from ..api import QuotexAPI
+
         self.api: QuotexAPI = api
         self.headers = {
             "User-Agent": self.api.session_data.get("user_agent"),
@@ -36,7 +38,7 @@ class WebsocketClient(object):
             on_ping=self.on_ping,
             on_pong=self.on_pong,
             header=self.headers,
-            cookie=self.api.session_data.get("cookies")
+            cookie=self.api.session_data.get("cookies"),
         )
 
     def on_message(self, wss, message):
@@ -59,7 +61,7 @@ class WebsocketClient(object):
                 logger.debug(_message)
                 message = json.loads(_message)
                 self.api.wss_message = message
-                if "call" in str(message) or 'put' in str(message):
+                if "call" in str(message) or "put" in str(message):
                     self.api.instruments = message
                 if message.get("signals"):
                     time_in = message.get("time")
@@ -67,25 +69,23 @@ class WebsocketClient(object):
                         try:
                             self.api.signal_data[i[0]] = {}
                             self.api.signal_data[i[0]][i[2]] = {}
-                            self.api.signal_data[i[0]][i[2]
-                                                       ]["dir"] = i[1][0]["signal"]
-                            self.api.signal_data[i[0]][i[2]
-                                                       ]["duration"] = i[1][0]["timeFrame"]
+                            self.api.signal_data[i[0]][i[2]]["dir"] = i[1][0]["signal"]
+                            self.api.signal_data[i[0]][i[2]]["duration"] = i[1][0][
+                                "timeFrame"
+                            ]
                         except:
                             self.api.signal_data[i[0]] = {}
                             self.api.signal_data[i[0]][time_in] = {}
-                            self.api.signal_data[i[0]
-                                                 ][time_in]["dir"] = i[1][0][1]
-                            self.api.signal_data[i[0]
-                                                 ][time_in]["duration"] = i[1][0][0]
+                            self.api.signal_data[i[0]][time_in]["dir"] = i[1][0][1]
+                            self.api.signal_data[i[0]][time_in]["duration"] = i[1][0][0]
                 elif message.get("liveBalance") or message.get("demoBalance"):
                     self.api.account_balance = message
                 elif message.get("index"):
                     self.api.candles.candles_data = message
-                elif message.get('purchaseTime'):
-                    request_id = message.get('requestId')
-                    self.api.orders[request_id]['id'] = message.get('id')
-                    self.api.orders[request_id]['response'] = message
+                elif message.get("purchaseTime"):
+                    request_id = message.get("requestId")
+                    self.api.orders[request_id]["id"] = message.get("id")
+                    self.api.orders[request_id]["response"] = message
 
                     self.api.buy_successful = message
                     self.api.buy_id = message["id"]
@@ -94,11 +94,14 @@ class WebsocketClient(object):
                     self.api.sold_options_respond = message
                 elif message.get("deals"):
                     for deal in message["deals"]:
-                        request_id = self.api.get_request_id_from_order_id(
-                            deal['id'])
+                        request_id = self.api.get_request_id_from_order_id(deal["id"])
                         if request_id:
-                            self.api.orders[request_id]['result'] = deal
-                            self.api.orders[request_id]['status'] = DEAL_STATUS_WIN if deal['profit'] > 0 else DEAL_STATUS_LOSS
+                            self.api.orders[request_id]["result"] = deal
+                            self.api.orders[request_id]["status"] = (
+                                DEAL_STATUS_WIN
+                                if deal["profit"] > 0
+                                else DEAL_STATUS_LOSS
+                            )
 
                         self.api.profit_in_operation = deal["profit"]
                         deal["win"] = True if message["profit"] > 0 else False
@@ -119,39 +122,41 @@ class WebsocketClient(object):
                 pass
             if str(message) == "41":
                 logger.info(
-                    "Evento de desconexão disparado pela plataforma, fazendo reconexão automática.")
+                    "Evento de desconexão disparado pela plataforma, fazendo reconexão automática."
+                )
                 global_value.check_websocket_if_connect = 0
             if "51-" in str(message):
                 self.api._temp_status = str(message)
-            elif self.api._temp_status == """451-["settings/list",{"_placeholder":true,"num":0}]""":
+            elif (
+                self.api._temp_status
+                == """451-["settings/list",{"_placeholder":true,"num":0}]"""
+            ):
                 self.api.settings_list = message
                 self.api._temp_status = ""
-            elif self.api._temp_status == """451-["history/list/v2",{"_placeholder":true,"num":0}]""":
+            elif (
+                self.api._temp_status
+                == """451-["history/list/v2",{"_placeholder":true,"num":0}]"""
+            ):
                 if message.get("asset") == self.api.current_asset:
                     # self.api.candles.candles_data = message["history"]
                     self.api.candle_v2_data[message["asset"]] = message
-                    self.api.candle_v2_data[message["asset"]]["candles"] = [{
-                        "time": candle[0],
-                        "open": candle[1],
-                        "close": candle[2],
-                        "high": candle[3],
-                        "low": candle[4],
-                        "ticks": candle[5]
-                    } for candle in message["candles"]]
+                    self.api.candle_v2_data[message["asset"]]["candles"] = [
+                        {
+                            "time": candle[0],
+                            "open": candle[1],
+                            "close": candle[2],
+                            "high": candle[3],
+                            "low": candle[4],
+                            "ticks": candle[5],
+                        }
+                        for candle in message["candles"]
+                    ]
             elif len(message[0]) == 4:
-                result = {
-                    "time": message[0][1],
-                    "price": message[0][2]
-                }
+                result = {"time": message[0][1], "price": message[0][2]}
                 self.api.realtime_price[message[0][0]].append(result)
             elif len(message[0]) == 2:
                 for i in message:
-                    result = {
-                        "sentiment": {
-                            "sell": 100 - int(i[1]),
-                            "buy": int(i[1])
-                        }
-                    }
+                    result = {"sentiment": {"sell": 100 - int(i[1]), "buy": int(i[1])}}
                     self.api.realtime_sentiment[i[0]] = result
         except:
             pass
@@ -185,10 +190,10 @@ class WebsocketClient(object):
         asset_name = self.api.current_asset
         period = self.api.current_period
         self.api.tick()
-        self.api.send_wss_payload('balance/list')
-        self.api.send_wss_payload('indicator/list')
-        self.api.send_wss_payload('drawing/load')
-        self.api.send_wss_payload('pending/list')
+        self.api.send_wss_payload("balance/list")
+        self.api.send_wss_payload("indicator/list")
+        self.api.send_wss_payload("drawing/load")
+        self.api.send_wss_payload("pending/list")
         self.api.subscribe_realtime_candle(asset_name, period)
         self.api.follow_asset(asset_name)
         self.api.get_chart_notifications(asset_name)

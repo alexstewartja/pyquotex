@@ -4,8 +4,16 @@ from ..http.qxbroker import Browser
 class Login(Browser):
     """Class for Quotex login resource."""
 
-    async def __call__(self, email, password, email_pass, imap_username=None, imap_server_host=None,
-                       imap_server_port=None, user_data_dir=None):
+    async def __call__(
+        self,
+        email,
+        password,
+        email_pass,
+        imap_username=None,
+        imap_server_host=None,
+        imap_server_port=None,
+        user_data_dir=None,
+    ):
         """Method to get Quotex API login http request.
         :param str email: The username of a Quotex server.
         :param str password: The password of a Quotex server.

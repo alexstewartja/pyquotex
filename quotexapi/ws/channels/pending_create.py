@@ -2,7 +2,11 @@ import json
 from _datetime import datetime
 
 from quotexapi.ws.channels.base import Base
-from quotexapi.expiration import get_expiration_time_quotex, timestamp_to_date, get_timestamp
+from quotexapi.expiration import (
+    get_expiration_time_quotex,
+    timestamp_to_date,
+    get_timestamp,
+)
 
 
 class PendingCreate(Base):
@@ -11,7 +15,15 @@ class PendingCreate(Base):
     name = "pending_create"
     action = "pending/create"
 
-    def __call__(self, asset, direction='call', duration=60, trade_amount=1, open_time=None, open_price=None):
+    def __call__(
+        self,
+        asset,
+        direction="call",
+        duration=60,
+        trade_amount=1,
+        open_time=None,
+        open_price=None,
+    ):
         if open_price is not None:
             open_type = 1
         else:
@@ -19,8 +31,9 @@ class PendingCreate(Base):
 
         if open_time is None:
             tzo = self.api.get_profile().time_offset
-            open_time = timestamp_to_date(
-                get_timestamp() + 65).strftime('%Y-%m-%dT%H:%M:%S')
+            open_time = timestamp_to_date(get_timestamp() + 65).strftime(
+                "%Y-%m-%dT%H:%M:%S"
+            )
 
         self.api.simulate_asset_switch(asset, duration)
 
@@ -29,7 +42,7 @@ class PendingCreate(Base):
             "asset": asset,
             "timeframe": duration,
             "command": direction,
-            "amount": trade_amount
+            "amount": trade_amount,
         }
 
         if open_type == 0:

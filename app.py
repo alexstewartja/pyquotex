@@ -6,12 +6,7 @@ import random
 import asyncio
 import pyfiglet
 from pathlib import Path
-from quotexapi.config import (
-    email,
-    password,
-    email_pass,
-    user_data_dir
-)
+from quotexapi.config import email, password, email_pass, user_data_dir
 from quotexapi.stable_api import Quotex
 
 __author__ = "Cleiton Leonel Creton"
@@ -39,7 +34,7 @@ client = Quotex(
     password=password,
     lang="pt",  # Default pt -> Português.
     email_pass=email_pass,  # If you use gmail and 2FA enabled.
-    user_data_dir=user_data_dir  # Path to the playwright's cache.
+    user_data_dir=user_data_dir,  # Path to the playwright's cache.
 )
 
 client.debug_ws_enable = False
@@ -81,8 +76,7 @@ async def connect(attempts=5):
                     attempt += 1
                     if Path(os.path.join(".", "session.json")).is_file():
                         Path(os.path.join(".", "session.json")).unlink()
-                    print(
-                        f"Tentando reconectar, tentativa {attempt} de {attempts}")
+                    print(f"Tentando reconectar, tentativa {attempt} de {attempts}")
             elif not check:
                 attempt += 1
             else:
@@ -118,7 +112,9 @@ async def buy_simple():
         asset = "AUDCAD"  # "EURUSD_otc"
         direction = "call"
         duration = 60  # in seconds
-        asset_name, asset_data = await client.get_available_asset(asset, force_open=True)
+        asset_name, asset_data = await client.get_available_asset(
+            asset, force_open=True
+        )
         print(asset_name, asset_data)
         if asset_data[2]:
             print("OK: Asset está aberto.")
@@ -167,7 +163,9 @@ async def buy_and_check_win():
         asset = "EURUSD_otc"  # "EURUSD_otc"
         direction = "call"
         duration = 60  # in seconds
-        asset_name, asset_data = await client.get_available_asset(asset, force_open=True)
+        asset_name, asset_data = await client.get_available_asset(
+            asset, force_open=True
+        )
         print(asset_name, asset_data)
         if asset_data[2]:
             print("OK: Asset está aberto.")
@@ -177,10 +175,12 @@ async def buy_and_check_win():
                 print("Aguardando resultado...")
                 if await client.check_win(buy_info["id"]):
                     print(
-                        f"\nWin!!! \nVencemos moleque!!!\nLucro: R$ {client.get_profit()}")
+                        f"\nWin!!! \nVencemos moleque!!!\nLucro: R$ {client.get_profit()}"
+                    )
                 else:
                     print(
-                        f"\nLoss!!! \nPerdemos moleque!!!\nPrejuízo: R$ {client.get_profit()}")
+                        f"\nLoss!!! \nPerdemos moleque!!!\nPrejuízo: R$ {client.get_profit()}"
+                    )
             else:
                 print("Falha na operação!!!")
         else:
@@ -211,7 +211,9 @@ async def buy_multiple(orders=10):
         print(order)
         if check_connect:
             # client.change_account("REAL")
-            asset_name, asset_data = await client.get_available_asset(order['asset'], force_open=True)
+            asset_name, asset_data = await client.get_available_asset(
+                order["asset"], force_open=True
+            )
             print(asset_name, asset_data)
             if asset_data[2]:
                 print("OK: Asset está aberto.")
@@ -234,7 +236,9 @@ async def sell_option():
         asset = "EURUSD_otc"  # "EURUSD_otc"
         direction = "put"
         duration = 1000  # in seconds
-        asset_name, asset_data = await client.get_available_asset(asset, force_open=True)
+        asset_name, asset_data = await client.get_available_asset(
+            asset, force_open=True
+        )
         print(asset_name, asset_data)
         if asset_data[2]:
             print("OK: Asset está aberto.")
@@ -318,7 +322,9 @@ async def get_candle_v2():
     check_connect, message = await client.connect()
     if check_connect:
         asset = "EURUSD_otc"
-        asset_name, asset_data = await client.get_available_asset(asset, force_open=True)
+        asset_name, asset_data = await client.get_available_asset(
+            asset, force_open=True
+        )
         print(asset_name, asset_data)
         if asset_data[2]:
             print("OK: Asset está aberto.")
@@ -336,7 +342,9 @@ async def get_realtime_candle():
     if check_connect:
         list_size = 10
         asset = "USDJPY_otc"
-        asset_name, asset_data = await client.get_available_asset(asset, force_open=True)
+        asset_name, asset_data = await client.get_available_asset(
+            asset, force_open=True
+        )
         print(asset_name, asset_data)
         if asset_data[2]:
             print("OK: Asset está aberto.")
@@ -356,7 +364,9 @@ async def get_realtime_sentiment():
     check_connect, message = await client.connect()
     if check_connect:
         asset = "EURUSD"
-        asset_name, asset_data = await client.get_available_asset(asset, force_open=True)
+        asset_name, asset_data = await client.get_available_asset(
+            asset, force_open=True
+        )
         if asset_data[2]:
             print("OK: Asset está aberto.")
             client.start_candles_stream(asset, 60)
@@ -416,7 +426,8 @@ async def execute(argument):
             return await balance_refill()
         case "help":
             print(
-                f"Uso: {'./app' if getattr(sys, 'frozen', False) else 'python app.py'} <opção>")
+                f"Uso: {'./app' if getattr(sys, 'frozen', False) else 'python app.py'} <opção>"
+            )
             return print(get_all_options())
         case _:
             return print("Opção inválida. Use 'help' para obter a lista de opções.")

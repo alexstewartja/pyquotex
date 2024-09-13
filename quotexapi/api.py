@@ -1,4 +1,5 @@
 """Module for Quotex websocket."""
+
 import os
 import sys
 import time
@@ -40,9 +41,9 @@ logger = logging.getLogger(__name__)
 
 # cert_path = certifi.where()
 cert_path = os.path.join("../", "quotex.pem")
-os.environ['SSL_CERT_FILE'] = cert_path
-os.environ['WEBSOCKET_CLIENT_CA_BUNDLE'] = cert_path
-cacert = os.environ.get('WEBSOCKET_CLIENT_CA_BUNDLE')
+os.environ["SSL_CERT_FILE"] = cert_path
+os.environ["WEBSOCKET_CLIENT_CA_BUNDLE"] = cert_path
+cacert = os.environ.get("WEBSOCKET_CLIENT_CA_BUNDLE")
 
 # Configuração do contexto SSL para usar TLS 1.3
 ssl_context = ssl.SSLContext(ssl.PROTOCOL_TLS_CLIENT)
@@ -62,6 +63,7 @@ def nested_dict(n, type):
 
 class QuotexAPI(object):
     """Class for communication with Quotex API."""
+
     socket_option_opened = {}
     buy_id = None
     orders = {}
@@ -82,27 +84,29 @@ class QuotexAPI(object):
     candles = Candles()
     profile = Profile()
 
-    def __init__(self,
-                 host,
-                 username,
-                 password,
-                 lang,
-                 email_pass=None,
-                 imap_username=None,
-                 imap_server_host=None,
-                 imap_server_port=None,
-                 proxies=None,
-                 resource_path=None,
-                 user_data_dir="."):
+    def __init__(
+        self,
+        host,
+        username,
+        password,
+        lang,
+        email_pass=None,
+        imap_username=None,
+        imap_server_host=None,
+        imap_server_port=None,
+        proxies=None,
+        resource_path=None,
+        user_data_dir=".",
+    ):
         """
         :param str host: The hostname or ip address of a Quotex server.
         :param str username: The username of a Quotex server.
         :param str password: The password of a Quotex server.
         :param str lang: The lang of a Quotex platform.
         :param str email_pass: The password of a Email.
-        :param str imap_username: 
-        :param str imap_server_host: 
-        :param int imap_server_port: 
+        :param str imap_username:
+        :param str imap_server_host:
+        :param int imap_server_port:
         :param proxies: The proxies of a Quotex server.
         :param str|Path resource_path:
         :param user_data_dir: The path browser user data dir.
@@ -148,31 +152,37 @@ class QuotexAPI(object):
         return self.websocket_client.wss
 
     def tick(self):
-        self.send_wss_payload('tick')
+        self.send_wss_payload("tick")
 
     def subscribe_realtime_candle(self, asset, period: int = 60):
         self.realtime_price[asset] = []
-        return self.send_wss_payload('instruments/update', {"asset": asset, "period": period})
+        return self.send_wss_payload(
+            "instruments/update", {"asset": asset, "period": period}
+        )
 
     def follow_asset(self, asset):
-        return self.send_wss_payload('instruments/follow', asset)
+        return self.send_wss_payload("instruments/follow", asset)
 
     def follow_candle(self, asset):
-        return self.send_wss_payload('depth/follow', asset)
+        return self.send_wss_payload("depth/follow", asset)
 
     def unfollow_candle(self, asset):
-        return self.send_wss_payload('depth/unfollow', asset)
+        return self.send_wss_payload("depth/unfollow", asset)
 
     def unsubscribe_realtime_candle(self, asset):
-        return self.send_wss_payload('subfor', asset)
+        return self.send_wss_payload("subfor", asset)
 
-    def get_chart_notifications(self, asset, version: str = '1.0.0'):
-        self.send_wss_payload('chart_notification/get',
-                              {"asset": asset, "version": version})
+    def get_chart_notifications(self, asset, version: str = "1.0.0"):
+        self.send_wss_payload(
+            "chart_notification/get", {"asset": asset, "version": version}
+        )
 
     def switch_to_asset(self, asset: str, duration: int = 60):
-        exp_time = get_expiration_time_quotex(int(
-            self.timesync.server_timestamp), duration) if '_otc' not in asset else duration
+        exp_time = (
+            get_expiration_time_quotex(int(self.timesync.server_timestamp), duration)
+            if "_otc" not in asset
+            else duration
+        )
         payload = {
             "chartId": "graph",
             "settings": {
@@ -185,9 +195,7 @@ class QuotexAPI(object):
                 "isIndicatorsShowing": True,
                 "isShortBetElement": False,
                 "chartPeriod": 4,
-                "currentAsset": {
-                    "symbol": asset
-                },
+                "currentAsset": {"symbol": asset},
                 "dealValue": 1,
                 "dealPercentValue": 1,
                 "isVisible": True,
@@ -196,37 +204,38 @@ class QuotexAPI(object):
                 "isAutoScrolling": 1,
                 "isOneClickTrade": True,
                 "upColor": "#0FAF59",
-                "downColor": "#FF6251"
-            }
+                "downColor": "#FF6251",
+            },
         }
 
-        self.send_wss_payload('settings/store', payload)
+        self.send_wss_payload("settings/store", payload)
 
-    @deprecated('Use `refill_demo_balance(...)` instead')
+    @deprecated("Use `refill_demo_balance(...)` instead")
     def edit_training_balance(self, amount):
         self.refill_demo_balance(amount)
 
     def refill_demo_balance(self, amount):
-        self.send_wss_payload('demo/refill', amount)
+        self.send_wss_payload("demo/refill", amount)
 
     def signals_subscribe(self):
-        self.send_wss_payload('signal/subscribe')
+        self.send_wss_payload("signal/subscribe")
 
-    @deprecated('Use `change_account_type(...)` instead')
+    @deprecated("Use `change_account_type(...)` instead")
     def change_account(self, account_type):
         self.change_account_type(account_type)
 
     def change_account_type(self, account_type):
         self.account_type = account_type
         self.send_wss_payload(
-            'account/change', {"demo": self.account_type, "tournamentId": 0})
+            "account/change", {"demo": self.account_type, "tournamentId": 0}
+        )
 
     def indicators(self):
         # 42["indicator/change",{"id":"Y5zYtYaUtjI6eUz06YlGF","settings":{"lines":{"main":{"lineWidth":1,"color":"#db4635"}},"ma":"SMA","period":10}}]
         # 42["indicator/delete", {"id": "23507dc2-05ca-4aec-9aef-55939735b3e0"}]
         pass
 
-    def simulate_asset_switch(self, asset: str, duration: int = 60, version='1.0.0'):
+    def simulate_asset_switch(self, asset: str, duration: int = 60, version="1.0.0"):
         self.tick()
         self.subscribe_realtime_candle(asset, duration)
         self.get_chart_notifications(asset, version)
@@ -279,7 +288,9 @@ class QuotexAPI(object):
         """
         return GetCandles(self)
 
-    def send_http_request_v1(self, resource, method, data=None, params=None, headers=None):
+    def send_http_request_v1(
+        self, resource, method, data=None, params=None, headers=None
+    ):
         """Send http request to Quotex server.
 
         :param resource: The instance of
@@ -292,8 +303,8 @@ class QuotexAPI(object):
         """
         url = resource.url
         logger.debug(url)
-        cookies = self.session_data.get('cookies')
-        user_agent = self.session_data.get('user_agent')
+        cookies = self.session_data.get("cookies")
+        user_agent = self.session_data.get("user_agent")
         if cookies:
             self.browser.headers["Cookie"] = cookies
         if user_agent:
@@ -304,9 +315,11 @@ class QuotexAPI(object):
         self.browser.headers["Accept"] = (
             "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8"
         )
-        self.browser.headers["Referer"] = headers.get('referer')
+        self.browser.headers["Referer"] = headers.get("referer")
         self.browser.headers["Upgrade-Insecure-Requests"] = "1"
-        self.browser.headers["Sec-Ch-Ua"] = '"Not_A Brand";v="8", "Chromium";v="120", "Google Chrome";v="120"'
+        self.browser.headers["Sec-Ch-Ua"] = (
+            '"Not_A Brand";v="8", "Chromium";v="120", "Google Chrome";v="120"'
+        )
         self.browser.headers["Sec-Ch-Ua-Mobile"] = "?0"
         self.browser.headers["Sec-Ch-Ua-Platform"] = '"Linux"'
         self.browser.headers["Sec-Fetch-Site"] = "same-origin"
@@ -315,10 +328,7 @@ class QuotexAPI(object):
         self.browser.headers["Sec-Fetch-Mode"] = "navigate"
         self.browser.headers["Dnt"] = "1"
         response = self.browser.send_request(
-            method=method,
-            url=url,
-            data=data,
-            params=params
+            method=method, url=url, data=data, params=params
         )
         try:
             response.raise_for_status()
@@ -351,15 +361,18 @@ class QuotexAPI(object):
         :param str data: The websocket request data.
         :param bool no_force_send: Default True.
         """
-        while (global_value.ssl_Mutual_exclusion
-               or global_value.ssl_Mutual_exclusion_write) and no_force_send:
+        while (
+            global_value.ssl_Mutual_exclusion or global_value.ssl_Mutual_exclusion_write
+        ) and no_force_send:
             pass
         global_value.ssl_Mutual_exclusion_write = True
         self.websocket.send(data)
         logger.debug(data)
         global_value.ssl_Mutual_exclusion_write = False
 
-    def send_wss_payload(self, action: str, payload: Optional[str | dict] = None, no_force_send=True):
+    def send_wss_payload(
+        self, action: str, payload: Optional[str | dict] = None, no_force_send=True
+    ):
         """
         Convenience method to send a payload over websocket to Quotex server.
         :param str action: wss action being performed, ex. "tick"
@@ -371,13 +384,13 @@ class QuotexAPI(object):
         if payload is not None:
             if not isinstance(payload, str):
                 payload = json.dumps(payload)
-            data.replace('%payload%', f',{payload}')
+            data.replace("%payload%", f",{payload}")
         else:
-            data.replace('%payload%', '')
+            data.replace("%payload%", "")
 
         return self.send_websocket_request(data, no_force_send)
 
-    @deprecated('Use `authenticate(...)` instead')
+    @deprecated("Use `authenticate(...)` instead")
     async def autenticate(self):
         await self.authenticate()
 
@@ -391,7 +404,7 @@ class QuotexAPI(object):
             self.imap_username,
             self.imap_server_host,
             self.imap_server_port,
-            self.user_data_dir
+            self.user_data_dir,
         )
         print(message)
         if not status:
@@ -418,13 +431,12 @@ class QuotexAPI(object):
                 "check_hostname": False,
                 "cert_reqs": ssl.CERT_NONE,
                 "ca_certs": cacert,
-                "context": ssl_context
-            }
+                "context": ssl_context,
+            },
         }
         payload["sslopt"]["ssl_version"] = ssl.PROTOCOL_TLSv1_2
         self.websocket_thread = threading.Thread(
-            target=self.websocket.run_forever,
-            kwargs=payload
+            target=self.websocket.run_forever, kwargs=payload
         )
         self.websocket_thread.daemon = True
         self.websocket_thread.start()
@@ -487,7 +499,9 @@ class QuotexAPI(object):
         return self.websocket_thread.is_alive()
 
     def generate_request_id(self):
-        def generate_pseudo_random_id(): return expiration.get_timestamp() + randint(1, 100)
+        def generate_pseudo_random_id():
+            return expiration.get_timestamp() + randint(1, 100)
+
         request_id = generate_pseudo_random_id()
         while request_id in self.orders:
             request_id = generate_pseudo_random_id()
@@ -496,7 +510,7 @@ class QuotexAPI(object):
     def get_order_by_id(self, order_id=None, request_id=None) -> Optional[dict]:
         if order_id is not None:
             for request_id, order in self.orders:
-                if 'id' in order and order['id'] == order_id:
+                if "id" in order and order["id"] == order_id:
                     return order
         elif request_id is not None:
             return self.orders[request_id] if request_id in self.orders else None
@@ -507,6 +521,6 @@ class QuotexAPI(object):
         order = self.get_order_by_id(order_id=order_id)
 
         if order is not None:
-            return order['request']['requestId']
+            return order["request"]["requestId"]
 
         return None
