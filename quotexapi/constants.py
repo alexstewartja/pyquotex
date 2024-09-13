@@ -87,13 +87,10 @@ codes_asset = {
     "XAGUSD": 65,
     "XAGUSD_otc": 167,
     "XAUUSD": 2,
-    "XAUUSD_otc": 169
+    "XAUUSD_otc": 169,
 }
 
-DEAL_STATUS_WIN = 'win'
-DEAL_STATUS_LOSS = 'loss'
+DEAL_STATUS_WIN = "win"
+DEAL_STATUS_LOSS = "loss"
 
-deal_statuses = {
-    DEAL_STATUS_WIN: 'Win',
-    DEAL_STATUS_LOSS: 'Loss'
-}
+deal_statuses = {DEAL_STATUS_WIN: "Win", DEAL_STATUS_LOSS: "Loss"}
