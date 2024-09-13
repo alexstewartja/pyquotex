@@ -2,7 +2,8 @@ from __future__ import annotations
 
 import subprocess
 
-from playwright._impl._driver import compute_driver_executable, get_driver_env
+from playwright._impl._driver import compute_driver_executable
+from playwright._impl._driver import get_driver_env
 from playwright.async_api import BrowserType as AsyncBrowserType
 from playwright.sync_api import BrowserType as SyncBrowserType
 

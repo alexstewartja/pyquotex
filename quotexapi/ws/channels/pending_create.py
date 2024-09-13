@@ -1,9 +1,9 @@
 import json
-
 from _datetime import datetime
 
-from quotexapi.expiration import (get_expiration_time_quotex, get_timestamp,
-                                  timestamp_to_date)
+from quotexapi.expiration import get_expiration_time_quotex
+from quotexapi.expiration import get_timestamp
+from quotexapi.expiration import timestamp_to_date
 from quotexapi.ws.channels.base import Base
 
 

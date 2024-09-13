@@ -7,7 +7,8 @@ from random import randint
 
 import requests
 from bs4 import BeautifulSoup
-from seleniumbase import SB, BaseCase
+from seleniumbase import BaseCase
+from seleniumbase import SB
 
 from ..http.automail import get_pin
 

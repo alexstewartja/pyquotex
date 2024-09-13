@@ -6,10 +6,14 @@ from typing import Optional
 
 from typing_extensions import deprecated
 
-from . import expiration, global_value
+from . import expiration
+from . import global_value
 from .api import QuotexAPI
-from .config import load_session, resource_path, update_session
-from .constants import DEAL_STATUS_WIN, codes_asset
+from .config import load_session
+from .config import resource_path
+from .config import update_session
+from .constants import codes_asset
+from .constants import DEAL_STATUS_WIN
 from .expiration import get_timestamp
 from .utils.services import truncate
 

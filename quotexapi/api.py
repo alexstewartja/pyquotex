@@ -1,5 +1,4 @@
 """Module for Quotex websocket."""
-
 import json
 import logging
 import os
@@ -19,7 +18,8 @@ import urllib3
 from setuptools.command.alias import alias
 from typing_extensions import deprecated
 
-from . import expiration, global_value
+from . import expiration
+from . import global_value
 from .expiration import get_expiration_time_quotex
 from .http.login import Login
 from .http.logout import Logout

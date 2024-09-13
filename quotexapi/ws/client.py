@@ -1,5 +1,4 @@
 """Module for Quotex websocket."""
-
 import json
 import logging
 import time
@@ -7,7 +6,8 @@ import time
 import websocket
 
 from .. import global_value
-from ..constants import DEAL_STATUS_LOSS, DEAL_STATUS_WIN
+from ..constants import DEAL_STATUS_LOSS
+from ..constants import DEAL_STATUS_WIN
 
 logger = logging.getLogger(__name__)
 

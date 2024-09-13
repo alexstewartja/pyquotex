@@ -8,7 +8,10 @@ from pathlib import Path
 
 import pyfiglet
 
-from quotexapi.config import email, email_pass, password, user_data_dir
+from quotexapi.config import email
+from quotexapi.config import email_pass
+from quotexapi.config import password
+from quotexapi.config import user_data_dir
 from quotexapi.stable_api import Quotex
 
 __author__ = "Cleiton Leonel Creton"
