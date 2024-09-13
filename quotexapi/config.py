@@ -4,10 +4,13 @@ import json
 import configparser
 from pathlib import Path
 
-USER_AGENT = "Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:109.0) Gecko/20100101 Firefox/119.0"
+USER_AGENT = "Mozilla/5.0 (X11; Linux x86_64; rv:129.0) Gecko/20100101 Firefox/129.0"
 
 base_dir = Path(__file__).parent.parent
 config_path = Path(os.path.join(base_dir, "settings/config.ini"))
+
+def build_config_path():
+    pass
 
 if not config_path.exists():
     config_path.parent.mkdir(exist_ok=True, parents=True)

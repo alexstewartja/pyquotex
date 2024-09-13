@@ -1,39 +1,46 @@
+import asyncio
 import os
 import re
 import json
+from random import randint
+
 import requests
 from pathlib import Path
 from bs4 import BeautifulSoup
+from seleniumbase import SB, BaseCase
+
 from ..http.automail import get_pin
-from playwright_stealth import stealth_async
-from ..utils.playwright_install import install
-from playwright.async_api import Playwright, async_playwright, expect
 
 
-async def fill_form(page, email, password):
-    email_selector = 'input.input-control-cabinet__input[type="email"]'
-    password_selector = 'input.input-control-cabinet__input[type="password"]'
-    login_button_selector = 'button.button--primary[type="submit"]'
+async def fill_form(sb: SB, email, password):
+    email_selector = '#tab-1 input.modal-sign__input-value[name="email"]'
+    password_selector = '#tab-1 input.modal-sign__input-value[name="password"]'
+    sign_in_button_selector = '#tab-1 button.modal-sign__block-button'
 
-    await page.locator(email_selector).wait_for(state='visible')
-    await page.locator(email_selector).fill(email)
+    sb.wait_for_element(email_selector)
+    sb.focus(email_selector)
+    sb.uc_gui_write(email)
+    sb.wait(2)
+    sb.wait_for_element(password_selector)
+    sb.focus(password_selector)
+    sb.uc_gui_write(password)
+    sb.wait(2)
+    sb.wait_for_element(sign_in_button_selector)
+    sb.uc_click(sign_in_button_selector)
+    pass
 
-    await page.locator(password_selector).wait_for(state='visible')
-    await page.locator(password_selector).fill(password)
 
-    await page.locator(login_button_selector).wait_for(state='visible')
-    await page.locator(login_button_selector).click()
+def fill_code_form(sb, code):
+    pin_code_selector = 'form.auth__form input[name="code"]'
+    submit_button_selector = 'form.auth__form .auth__submit button[type="submit"]'
 
-
-async def fill_code_form(page, code):
-    code_selector = 'input.input-control-cabinet__input[name="code"]'
-    login_button_selector = 'button.button--primary[type="submit"]'
-
-    await page.locator(code_selector).wait_for(state='visible')
-    await page.locator(code_selector).fill(code)
-
-    await page.locator(login_button_selector).wait_for(state='visible')
-    await page.locator(login_button_selector).click()
+    sb.wait_for_element(pin_code_selector)
+    sb.focus(pin_code_selector)
+    sb.uc_gui_write(pin_code_selector, code)
+    sb.wait(2)
+    sb.wait_for_element(submit_button_selector)
+    sb.uc_click(submit_button_selector)
+    pass
 
 
 class Browser(object):
@@ -43,96 +50,68 @@ class Browser(object):
     email = None
     password = None
     email_pass = None
-    args = [
-        '--disable-web-security',
-        '--no-sandbox',
-        '--aggressive-cache-discard',
-        '--disable-cache',
-        '--disable-application-cache',
-        '--disable-offline-load-stale-cache',
-        '--disk-cache-size=0',
-        '--disable-background-networking',
-        '--disable-default-apps',
-        '--disable-extensions',
-        '--disable-sync',
-        '--disable-translate',
-        '--hide-scrollbars',
-        '--metrics-recording-only',
-        '--mute-audio',
-        '--safebrowsing-disable-auto-update',
-        '--ignore-certificate-errors',
-        '--ignore-ssl-errors',
-        '--ignore-certificate-errors-spki-list',
-        '--disable-features=LeakyPeeker',
-        '--disable-setuid-sandbox'
-    ]
+    imap_username = None,
+    imap_server_host = None,
+    imap_server_port = None
 
     def __init__(self, api):
         self.api = api
         self.html = None
 
-    async def run(self, playwright: Playwright) -> None:
-        if self.user_data_dir:
-            browser = playwright.firefox
-            context = await browser.launch_persistent_context(
-                self.user_data_dir,
-                args=self.args,
-                user_agent="Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:109.0) Gecko/20100101 Firefox/119.0",
-                headless=True,
-                viewport={
-                    "width": 1280,
-                    "height": 720,
-                }
-            )
-            page = context.pages[0]
-        else:
-            browser = await playwright.firefox.launch(
-                headless=True,
-                args=self.args,
-            )
-            context = await browser.new_context(
-                viewport={
-                    "width": 1280,
-                    "height": 720
-                },
-                user_agent='Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:109.0) Gecko/20100101 Firefox/119.0',
-            )
-            page = await context.new_page()
-        await stealth_async(page)
-        url = f"{self.https_base_url}/{self.api.lang}/sign-in/modal/"
-        await page.goto(url=url)
-        if page.url != f"{self.https_base_url}/{self.api.lang}/trade":
-            await page.wait_for_timeout(5000)
+    async def run(self, sb: BaseCase) -> None:
+        sb.uc_open_with_reconnect(f"{self.https_base_url}/{self.api.lang}")
+        sb.wait_for_ready_state_complete()
+
+        demo_acc_href = f"{self.https_base_url}/{self.api.lang}/sign-up/fast/"
+        demo_acc_button_selector = f'#top .header__list--item a[href="{demo_acc_href}"]'
+        sb.wait_for_element(demo_acc_button_selector)
+        sb.uc_click(demo_acc_button_selector)
+        sb.wait_for_ready_state_complete()
+
+        deposit_btn_selector = '.header__sidebar .button.button--success.header__sidebar-button.deposit'
+        sb.wait_for_element(deposit_btn_selector)
+        sb.uc_click(deposit_btn_selector)
+        sb.wait_for_ready_state_complete()
+
+        sign_in_tab_selector = 'a.tabs__tab[href="https://qxbroker.com/en/sign-in/modal/"]'
+        sb.wait_for_element(sign_in_tab_selector)
+        sb.uc_click(sign_in_tab_selector)
+        sb.wait_for_ready_state_complete()
+
+        sign_in_url = f"{self.https_base_url}/{self.api.lang}/sign-in/modal/"
+
+        if sb.get_current_url() == sign_in_url:
             await fill_form(
-                page,
+                sb,
                 self.email,
                 self.password
             )
-            async with page.expect_navigation():
-                await page.wait_for_timeout(5000)
-                soup = BeautifulSoup(await page.content(), "html.parser")
+            code_entry_url = sign_in_url.rstrip('modal/')
+            if sb.get_current_url() == code_entry_url:
+                soup = sb.get_beautiful_soup()
                 required_keep_code = soup.find("input", {"name": "keep_code"})
                 if required_keep_code:
                     auth_body = soup.find("main", {"class": "auth__body"})
                     input_message = (
                         f'{auth_body.find("p").text}: ' if auth_body.find("p")
-                        else "Insira o código PIN que acabamos de enviar para o seu e-mail: "
+                        else f"Enter the authentication PIN that was sent to: {self.email}"
                     )
                     pin_code = None
                     if self.email_pass:
-                        pin_code = await get_pin(self.email, self.email_pass)
+                        pin_code = await get_pin(self.email, self.email_pass, self.imap_username, self.imap_server_host,
+                                                 self.imap_server_port)
                     code = pin_code or input(input_message)
-                    await fill_code_form(page, code)
-        await page.wait_for_timeout(5000)
-        cookies = await context.cookies()
-        source = await page.content()
-        self.html = BeautifulSoup(source, "html.parser")
-        user_agent = await page.evaluate("() => navigator.userAgent;")
+                    fill_code_form(sb, code)
+                    sb.wait_for_ready_state_complete()
+
+        cookies = sb.get_cookies()
+        print(f"Cookies: {cookies}")
+        self.html = sb.get_beautiful_soup()
+        user_agent = sb.get_user_agent()
         self.api.session_data["user_agent"] = user_agent
         script = self.html.find_all("script", {"type": "text/javascript"})
         status, message = self.success_login()
         if not status:
-            await context.close() if self.user_data_dir else await browser.close()
             return
         settings = script[1].get_text().strip().replace(";", "")
         match = re.sub("window.settings = ", "", settings)
@@ -146,7 +125,6 @@ class Browser(object):
         output_file.write_text(
             json.dumps({"cookies": cookies_string, "token": token, "user_agent": user_agent}, indent=4)
         )
-        await context.close() if self.user_data_dir else await browser.close()
 
     def success_login(self):
         match = self.html.find(
@@ -160,9 +138,8 @@ class Browser(object):
         return False, f"Login failed. {match.text.strip()}"
 
     async def main(self) -> None:
-        async with async_playwright() as playwright:
-            # install(playwright.firefox, with_deps=True)
-            await self.run(playwright)
+        async with SB(uc=True, user_data_dir=self.user_data_dir, test=True, headless=False) as sb:
+            await self.run(sb)
 
     async def get_cookies_and_ssid(self):
         await self.main()

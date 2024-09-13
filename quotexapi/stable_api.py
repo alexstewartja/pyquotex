@@ -2,10 +2,14 @@ import time
 import logging
 import asyncio
 from datetime import datetime
+from typing import Optional
+from typing_extensions import deprecated
+
 from . import expiration
 from . import global_value
 from .api import QuotexAPI
-from .constants import codes_asset
+from .constants import codes_asset, DEAL_STATUS_WIN
+from .expiration import get_timestamp
 from .utils.services import truncate
 from .config import (
     load_session,
@@ -25,6 +29,9 @@ class Quotex(object):
             password,
             lang="pt",
             email_pass=None,
+            imap_username=None,
+            imap_server_host=None,
+            imap_server_port=None,
             user_agent="Quotex/1.0",
             root_path=".",
             user_data_dir="browser",
@@ -52,6 +59,9 @@ class Quotex(object):
         self.password = password
         self.lang = lang
         self.email_pass = email_pass
+        self.imap_username = imap_username
+        self.imap_server_host = imap_server_host
+        self.imap_server_port = imap_server_port
         self.resource_path = root_path
         self.user_data_dir = user_data_dir
         self.asset_default = asset_default
@@ -61,7 +71,7 @@ class Quotex(object):
         self.subscribe_mood = []
         self.account_is_demo = 1
         self.suspend = 0.5
-        self.api = None
+        self.api: Optional[QuotexAPI] = None
         self.duration = None
         self.websocket_client = None
         self.websocket_thread = None
@@ -117,7 +127,7 @@ class Quotex(object):
 
     def get_all_asset_name(self):
         if self.api.instruments:
-            return [instrument[2].replace("\n", "") for instrument in self.api.instruments]
+            return [[i[1], i[2].replace("\n", "")] for i in self.api.instruments]
 
     async def get_available_asset(self, asset_name: str, force_open: bool = False):
         asset_open = await self.check_asset_open(asset_name)
@@ -133,7 +143,7 @@ class Quotex(object):
         for i in instruments:
             if asset_name == i[1]:
                 self.api.current_asset = asset_name
-                return i[0], i[2], i[14]
+                return i[0], i[2].replace("\n", ""), i[14]
 
     async def get_candles(self, asset, end_from_time, offset, period):
         index = expiration.get_timestamp()
@@ -154,8 +164,8 @@ class Quotex(object):
 
     async def get_candle_v2(self, asset, period):
         self.api.candle_v2_data[asset] = None
-        self.stop_candles_stream(asset)
-        self.api.subscribe_realtime_candle(asset, period)
+        # self.stop_candles_stream(asset)
+        self.start_candles_stream(asset, period)
         while self.api.candle_v2_data[asset] is None:
             await asyncio.sleep(0.1)
         return self.api.candle_v2_data[asset]
@@ -167,6 +177,9 @@ class Quotex(object):
             self.password,
             self.lang,
             email_pass=self.email_pass,
+            imap_username=self.imap_username,
+            imap_server_host=self.imap_server_host,
+            imap_server_port=self.imap_server_port,
             resource_path=self.resource_path,
             user_data_dir=self.user_data_dir
         )
@@ -197,11 +210,11 @@ class Quotex(object):
     def change_account(self, balance_mode: str):
         """Change active account `real` or `practice`"""
         self.account_is_demo = 0 if balance_mode.upper() == "REAL" else 1
-        self.api.change_account(self.account_is_demo)
+        self.api.change_account_type(self.account_is_demo)
 
-    async def edit_practice_balance(self, amount=None):
+    async def edit_practice_balance(self, amount=10000):
         self.api.training_balance_edit_request = None
-        self.api.edit_training_balance(amount)
+        self.api.refill_demo_balance(amount)
         while self.api.training_balance_edit_request is None:
             await asyncio.sleep(0.1)
         return self.api.training_balance_edit_request
@@ -216,26 +229,35 @@ class Quotex(object):
     async def get_profile(self):
         return await self.api.get_profile()
 
-    async def buy(self, amount: float, asset: str, direction: str, duration: int):
+    async def buy(self, amount: float, asset: str, direction: str, duration: int, tournament_id:int=0):
         """Buy Binary option"""
-        request_id = expiration.get_timestamp()
+        request_id = self.api.generate_request_id()
         self.api.buy_id = None
         self.api.current_asset = asset
         self.api.timesync.server_timestamp = time.time()
-        self.api.subscribe_realtime_candle(asset, duration)
-        self.api.buy(amount, asset, direction, duration, request_id)
+        self.api.simulate_asset_switch(asset, duration)
+        self.api.buy(amount, asset, direction, duration, request_id, tournament_id)
         count = 0.1
-        while self.api.buy_id is None:
+        while 'response' not in self.api.orders[request_id]:
             count += 0.1
             if count > duration:
-                status_buy = False
+                status = False
                 break
             await asyncio.sleep(0.1)
             if global_value.check_websocket_if_error:
                 return False, global_value.websocket_error_reason
         else:
-            status_buy = True
-        return status_buy, self.api.buy_successful
+            status = True
+        return status, self.api.orders[request_id]
+
+    async def wait_then_buy(self, buy_timestamp: int, asset: str, amount: float, direction: str, duration: int, tournament_id:int=0):
+        now = get_timestamp()
+        time_diff = buy_timestamp - now
+        if time_diff > 0:
+            while time_diff > 0:
+                time_diff -= 1
+                await asyncio.sleep(1)
+        return await self.buy(amount, asset, direction, duration, tournament_id)
 
     async def sell_option(self, options_ids):
         """Sell asset Quotex"""
@@ -249,43 +271,63 @@ class Quotex(object):
         """Payment Quotex server"""
         assets_data = {}
         for i in self.api.instruments:
-            assets_data[i[2]] = {
+            # print(i)
+            assets_data[i[2].replace("\n", "")] = {
                 "turbo_payment": i[18],
                 "payment": i[5],
+                "profit": {
+                    "1M": i[-9],
+                    "5M": i[-8]
+                },
                 "open": i[14]
             }
         return assets_data
 
+    @deprecated('Use `start_remaining_time(...)` instead')
     async def start_remaing_time(self):
         now_stamp = datetime.fromtimestamp(expiration.get_timestamp())
         expiration_stamp = datetime.fromtimestamp(self.api.timesync.server_timestamp)
-        remaing_time = int((expiration_stamp - now_stamp).total_seconds())
-        while remaing_time >= 0:
-            remaing_time -= 1
-            print(f"\rRestando {remaing_time if remaing_time > 0 else 0} segundos ...", end="")
+        remaining_time = int((expiration_stamp - now_stamp).total_seconds())
+        while remaining_time >= 0:
+            remaining_time -= 1
+            print(f"\rRestando {remaining_time if remaining_time > 0 else 0} segundos ...", end="")
             await asyncio.sleep(1)
         await asyncio.sleep(5)
 
-    async def check_win(self, id_number):
-        """Check win based id"""
-        await self.start_remaing_time()
-        while True:
-            try:
-                listinfodata_dict = self.api.listinfodata.get(id_number)
-                if listinfodata_dict["game_state"] == 1:
-                    break
-            except:
-                pass
-        self.api.listinfodata.delete(id_number)
-        return listinfodata_dict["win"]
+    async def start_remaining_time(self, order_id):
+        order = self.api.get_order_by_id(order_id)
+        if order:
+            now_ts = expiration.get_timestamp()
+            expiration_ts = int(order['response']['closeTimestamp']) + 5
+            remaining_time = expiration_ts - now_ts
+            print(f"Waiting for {order['response']['asset']} until {order['response']['closeTime']}...")
+            while remaining_time >= 0:
+                remaining_time -= 1
+                await asyncio.sleep(1)
+            return True
+        return False
+
+
+    async def check_win(self, order_id):
+        """Check win based on order id"""
+        awaited_remaining_time = await self.start_remaining_time(order_id)
+        if awaited_remaining_time:
+            request_id = self.api.get_request_id_from_order_id(order_id)
+            if request_id:
+                while True:
+                    order = self.api.get_order_by_id(request_id=request_id)
+                    if 'status' in order:
+                        return order['status'] == DEAL_STATUS_WIN
+
+        return False
 
     def start_candles_stream(self, asset, period=0):
-        self.api.follow_candle(asset)
         self.api.subscribe_realtime_candle(asset, period)
+        self.api.follow_candle(asset)
 
     def stop_candles_stream(self, asset):
-        self.api.unfollow_candle(asset)
         self.api.unsubscribe_realtime_candle(asset)
+        self.api.unfollow_candle(asset)
 
     def start_signals_data(self):
         self.api.signals_subscribe()
@@ -296,11 +338,25 @@ class Quotex(object):
                 return self.api.realtime_price
             time.sleep(0.1)
 
-    def get_realtime_sentiment(self, asset):
+    async def start_realtime_price(self,  asset: str, period: int = 0):
+        self.start_candles_stream(asset, period)
+        while True:
+            if self.api.realtime_price.get(asset):
+                return self.api.realtime_price
+            await asyncio.sleep(0.5)
+
+    async def get_realtime_price(self, asset: str):
+        return self.api.realtime_price.get(asset, {})
+
+    async def start_realtime_sentiment(self, asset: str, period: int = 0):
+        self.start_candles_stream(asset, period)
         while True:
             if self.api.realtime_sentiment.get(asset):
-                return self.api.realtime_sentiment
-            time.sleep(0.1)
+                return self.api.realtime_sentiment[asset]
+            await asyncio.sleep(0.5)
+
+    async def get_realtime_sentiment(self, asset: str):
+        return self.api.realtime_sentiment.get(asset, {})
 
     def get_signal_data(self):
         return self.api.signal_data
@@ -366,3 +422,4 @@ class Quotex(object):
 
     def close(self):
         return self.api.close()
+
