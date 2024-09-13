@@ -1,5 +1,5 @@
 [tool.poetry]
-name = "pyquotex"
+name = "quotexapi"
 version = "0.1.0"
 description = "Unofficial Quotex SDK"
 authors = ["A. Stewart <git@alexstewartja.com>"]
