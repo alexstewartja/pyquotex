@@ -15,5 +15,9 @@ class Ssid(Base):
         """
         self.send_wss_payload(
             "authorization",
-            {"session": ssid, "isDemo": self.api.account_type, "tournamentId": 0},
+            {
+                "session": ssid,
+                "isDemo": self.api.account_type,
+                "tournamentId": 0
+            },
         )

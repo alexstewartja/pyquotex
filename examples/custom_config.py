@@ -11,7 +11,6 @@ email = "account@gmail.com"
 password = "you_password"
 email_pass = "gmail_app_key"
 
-
 client = Quotex(
     email=email,
     password=password,

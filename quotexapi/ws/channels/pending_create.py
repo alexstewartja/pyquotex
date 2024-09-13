@@ -29,9 +29,8 @@ class PendingCreate(Base):
 
         if open_time is None:
             tzo = self.api.get_profile().time_offset
-            open_time = timestamp_to_date(get_timestamp() + 65).strftime(
-                "%Y-%m-%dT%H:%M:%S"
-            )
+            open_time = timestamp_to_date(get_timestamp() +
+                                          65).strftime("%Y-%m-%dT%H:%M:%S")
 
         self.api.simulate_asset_switch(asset, duration)
 

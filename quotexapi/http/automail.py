@@ -23,12 +23,12 @@ async def get_pin(
     mail.select("inbox")
     while attempts > 0:
         status, email_ids = mail.search(
-            None, f'(FROM "{from_email}", TO "{email_address}")'
-        )
+            None, f'(FROM "{from_email}", TO "{email_address}")')
         email_id_list = email_ids[0].split()
 
         if not email_id_list:
-            print(f"No emails found from {from_email} to {email_address} inbox.")
+            print(
+                f"No emails found from {from_email} to {email_address} inbox.")
             mail.logout()
             return None
 

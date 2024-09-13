@@ -58,8 +58,8 @@ class Browser(object):
     email = None
     password = None
     email_pass = None
-    imap_username = (None,)
-    imap_server_host = (None,)
+    imap_username = (None, )
+    imap_server_host = (None, )
     imap_server_port = None
 
     def __init__(self, api):
@@ -84,8 +84,7 @@ class Browser(object):
         sb.wait_for_ready_state_complete()
 
         sign_in_tab_selector = (
-            'a.tabs__tab[href="https://qxbroker.com/en/sign-in/modal/"]'
-        )
+            'a.tabs__tab[href="https://qxbroker.com/en/sign-in/modal/"]')
         sb.wait_for_element(sign_in_tab_selector)
         sb.uc_click(sign_in_tab_selector)
         sb.wait_for_ready_state_complete()
@@ -102,8 +101,8 @@ class Browser(object):
                     auth_body = soup.find("main", {"class": "auth__body"})
                     input_message = (
                         f'{auth_body.find("p").text}: '
-                        if auth_body.find("p")
-                        else f"Enter the authentication PIN that was sent to: {self.email}"
+                        if auth_body.find("p") else
+                        f"Enter the authentication PIN that was sent to: {self.email}"
                     )
                     pin_code = None
                     if self.email_pass:
@@ -131,34 +130,39 @@ class Browser(object):
         match = re.sub("window.settings = ", "", settings)
         token = json.loads(match).get("token")
         self.api.session_data["token"] = token
-        output_file = Path(os.path.join(self.api.resource_path, "session.json"))
+        output_file = Path(os.path.join(self.api.resource_path,
+                                        "session.json"))
         output_file.parent.mkdir(exist_ok=True, parents=True)
         cookiejar = requests.utils.cookiejar_from_dict(
-            {c["name"]: c["value"] for c in cookies}
-        )
+            {c["name"]: c["value"]
+             for c in cookies})
         cookies_string = "; ".join([f"{c.name}={c.value}" for c in cookiejar])
         self.api.session_data["cookies"] = cookies_string
         output_file.write_text(
             json.dumps(
-                {"cookies": cookies_string, "token": token, "user_agent": user_agent},
+                {
+                    "cookies": cookies_string,
+                    "token": token,
+                    "user_agent": user_agent
+                },
                 indent=4,
-            )
-        )
+            ))
 
     def success_login(self):
         """ """
-        match = self.html.find("div", {"class": "hint -danger"}) or self.html.find(
-            "div", {"class": "hint hint--danger"}
-        )
+        match = self.html.find("div",
+                               {"class": "hint -danger"}) or self.html.find(
+                                   "div", {"class": "hint hint--danger"})
         if match is None:
             return True, "Login successful."
 
         return False, f"Login failed. {match.text.strip()}"
 
     async def main(self) -> None:
-        async with SB(
-            uc=True, user_data_dir=self.user_data_dir, test=True, headless=False
-        ) as sb:
+        async with SB(uc=True,
+                      user_data_dir=self.user_data_dir,
+                      test=True,
+                      headless=False) as sb:
             await self.run(sb)
 
     async def get_cookies_and_ssid(self):

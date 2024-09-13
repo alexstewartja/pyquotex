@@ -53,7 +53,11 @@ def load_session(user_agent):
             session_data = json.loads(file.read())
     else:
         output_file.parent.mkdir(exist_ok=True, parents=True)
-        session_dict = {"cookies": None, "token": None, "user_agent": user_agent}
+        session_dict = {
+            "cookies": None,
+            "token": None,
+            "user_agent": user_agent
+        }
         session_result = json.dumps(session_dict, indent=4)
         output_file.write_text(session_result)
         session_data = json.loads(session_result)

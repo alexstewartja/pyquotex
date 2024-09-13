@@ -23,9 +23,10 @@ class Base(object):
         """
         return self.api.send_websocket_request(data)
 
-    def send_wss_payload(
-        self, action: str, payload: Optional[str | dict] = None, no_force_send=True
-    ):
+    def send_wss_payload(self,
+                         action: str,
+                         payload: Optional[str | dict] = None,
+                         no_force_send=True):
         """
 
         :param action: str:

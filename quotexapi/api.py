@@ -170,9 +170,10 @@ class QuotexAPI(object):
 
         """
         self.realtime_price[asset] = []
-        return self.send_wss_payload(
-            "instruments/update", {"asset": asset, "period": period}
-        )
+        return self.send_wss_payload("instruments/update", {
+            "asset": asset,
+            "period": period
+        })
 
     def follow_asset(self, asset):
         """
@@ -213,9 +214,10 @@ class QuotexAPI(object):
         :param version: str:  (Default value = "1.0.0")
 
         """
-        self.send_wss_payload(
-            "chart_notification/get", {"asset": asset, "version": version}
-        )
+        self.send_wss_payload("chart_notification/get", {
+            "asset": asset,
+            "version": version
+        })
 
     def switch_to_asset(self, asset: str, duration: int = 60):
         """
@@ -224,11 +226,9 @@ class QuotexAPI(object):
         :param duration: int:  (Default value = 60)
 
         """
-        exp_time = (
-            get_expiration_time_quotex(int(self.timesync.server_timestamp), duration)
-            if "_otc" not in asset
-            else duration
-        )
+        exp_time = (get_expiration_time_quotex(
+            int(self.timesync.server_timestamp), duration)
+                    if "_otc" not in asset else duration)
         payload = {
             "chartId": "graph",
             "settings": {
@@ -241,7 +241,9 @@ class QuotexAPI(object):
                 "isIndicatorsShowing": True,
                 "isShortBetElement": False,
                 "chartPeriod": 4,
-                "currentAsset": {"symbol": asset},
+                "currentAsset": {
+                    "symbol": asset
+                },
                 "dealValue": 1,
                 "dealPercentValue": 1,
                 "isVisible": True,
@@ -293,9 +295,10 @@ class QuotexAPI(object):
 
         """
         self.account_type = account_type
-        self.send_wss_payload(
-            "account/change", {"demo": self.account_type, "tournamentId": 0}
-        )
+        self.send_wss_payload("account/change", {
+            "demo": self.account_type,
+            "tournamentId": 0
+        })
 
     def indicators(self):
         """ """
@@ -303,7 +306,10 @@ class QuotexAPI(object):
         # 42["indicator/delete", {"id": "23507dc2-05ca-4aec-9aef-55939735b3e0"}]
         pass
 
-    def simulate_asset_switch(self, asset: str, duration: int = 60, version="1.0.0"):
+    def simulate_asset_switch(self,
+                              asset: str,
+                              duration: int = 60,
+                              version="1.0.0"):
         """
 
         :param asset: str:
@@ -378,9 +384,12 @@ class QuotexAPI(object):
         """
         return GetCandles(self)
 
-    def send_http_request_v1(
-        self, resource, method, data=None, params=None, headers=None
-    ):
+    def send_http_request_v1(self,
+                             resource,
+                             method,
+                             data=None,
+                             params=None,
+                             headers=None):
         """Send http request to Quotex server.
 
         :param resource: The instance of
@@ -406,15 +415,15 @@ class QuotexAPI(object):
             self.browser.headers["User-Agent"] = user_agent
         self.browser.headers["Connection"] = "keep-alive"
         self.browser.headers["Accept-Encoding"] = "gzip, deflate, br"
-        self.browser.headers["Accept-Language"] = "pt-BR,pt;q=0.8,en-US;q=0.5,en;q=0.3"
+        self.browser.headers[
+            "Accept-Language"] = "pt-BR,pt;q=0.8,en-US;q=0.5,en;q=0.3"
         self.browser.headers["Accept"] = (
             "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8"
         )
         self.browser.headers["Referer"] = headers.get("referer")
         self.browser.headers["Upgrade-Insecure-Requests"] = "1"
         self.browser.headers["Sec-Ch-Ua"] = (
-            '"Not_A Brand";v="8", "Chromium";v="120", "Google Chrome";v="120"'
-        )
+            '"Not_A Brand";v="8", "Chromium";v="120", "Google Chrome";v="120"')
         self.browser.headers["Sec-Ch-Ua-Mobile"] = "?0"
         self.browser.headers["Sec-Ch-Ua-Platform"] = '"Linux"'
         self.browser.headers["Sec-Fetch-Site"] = "same-origin"
@@ -422,9 +431,10 @@ class QuotexAPI(object):
         self.browser.headers["Sec-Fetch-Dest"] = "document"
         self.browser.headers["Sec-Fetch-Mode"] = "navigate"
         self.browser.headers["Dnt"] = "1"
-        response = self.browser.send_request(
-            method=method, url=url, data=data, params=params
-        )
+        response = self.browser.send_request(method=method,
+                                             url=url,
+                                             data=data,
+                                             params=params)
         try:
             response.raise_for_status()
         except requests.exceptions.HTTPError:
@@ -465,18 +475,18 @@ class QuotexAPI(object):
         :param no_force_send:  (Default value = True)
 
         """
-        while (
-            global_value.ssl_Mutual_exclusion or global_value.ssl_Mutual_exclusion_write
-        ) and no_force_send:
+        while (global_value.ssl_Mutual_exclusion
+               or global_value.ssl_Mutual_exclusion_write) and no_force_send:
             pass
         global_value.ssl_Mutual_exclusion_write = True
         self.websocket.send(data)
         logger.debug(data)
         global_value.ssl_Mutual_exclusion_write = False
 
-    def send_wss_payload(
-        self, action: str, payload: Optional[str | dict] = None, no_force_send=True
-    ):
+    def send_wss_payload(self,
+                         action: str,
+                         payload: Optional[str | dict] = None,
+                         no_force_send=True):
         """Convenience method to send a payload over websocket to Quotex server.
 
         :param str: action: wss action being performed, ex. "tick"
@@ -544,8 +554,7 @@ class QuotexAPI(object):
         }
         payload["sslopt"]["ssl_version"] = ssl.PROTOCOL_TLSv1_2
         self.websocket_thread = threading.Thread(
-            target=self.websocket.run_forever, kwargs=payload
-        )
+            target=self.websocket.run_forever, kwargs=payload)
         self.websocket_thread.daemon = True
         self.websocket_thread.start()
         while True:
@@ -615,6 +624,7 @@ class QuotexAPI(object):
 
     def generate_request_id(self):
         """ """
+
         def generate_pseudo_random_id():
             """ """
             return expiration.get_timestamp() + randint(1, 100)
@@ -624,7 +634,9 @@ class QuotexAPI(object):
             request_id = generate_pseudo_random_id()
         return request_id
 
-    def get_order_by_id(self, order_id=None, request_id=None) -> Optional[dict]:
+    def get_order_by_id(self,
+                        order_id=None,
+                        request_id=None) -> Optional[dict]:
         """
 
         :param order_id:  (Default value = None)
@@ -636,7 +648,8 @@ class QuotexAPI(object):
                 if "id" in order and order["id"] == order_id:
                     return order
         elif request_id is not None:
-            return self.orders[request_id] if request_id in self.orders else None
+            return self.orders[
+                request_id] if request_id in self.orders else None
 
         return None
 

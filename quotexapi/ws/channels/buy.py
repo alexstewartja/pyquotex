@@ -9,14 +9,19 @@ class Buy(Base):
 
     name = "buy"
 
-    def __call__(self, price, asset, direction, duration, request_id, tournament_id=0):
+    def __call__(self,
+                 price,
+                 asset,
+                 direction,
+                 duration,
+                 request_id,
+                 tournament_id=0):
         _duration = duration
         option_type = 100
         if "_otc" not in asset:
             option_type = 1
             duration = get_expiration_time_quotex(
-                int(self.api.timesync.server_timestamp), _duration
-            )
+                int(self.api.timesync.server_timestamp), _duration)
 
         self.api.simulate_asset_switch(asset, _duration)
 

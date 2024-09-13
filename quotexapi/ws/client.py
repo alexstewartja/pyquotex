@@ -76,15 +76,17 @@ class WebsocketClient(object):
                         try:
                             self.api.signal_data[i[0]] = {}
                             self.api.signal_data[i[0]][i[2]] = {}
-                            self.api.signal_data[i[0]][i[2]]["dir"] = i[1][0]["signal"]
-                            self.api.signal_data[i[0]][i[2]]["duration"] = i[1][0][
-                                "timeFrame"
-                            ]
+                            self.api.signal_data[i[0]][
+                                i[2]]["dir"] = i[1][0]["signal"]
+                            self.api.signal_data[i[0]][
+                                i[2]]["duration"] = i[1][0]["timeFrame"]
                         except:
                             self.api.signal_data[i[0]] = {}
                             self.api.signal_data[i[0]][time_in] = {}
-                            self.api.signal_data[i[0]][time_in]["dir"] = i[1][0][1]
-                            self.api.signal_data[i[0]][time_in]["duration"] = i[1][0][0]
+                            self.api.signal_data[
+                                i[0]][time_in]["dir"] = i[1][0][1]
+                            self.api.signal_data[
+                                i[0]][time_in]["duration"] = i[1][0][0]
                 elif message.get("liveBalance") or message.get("demoBalance"):
                     self.api.account_balance = message
                 elif message.get("index"):
@@ -96,26 +98,26 @@ class WebsocketClient(object):
 
                     self.api.buy_successful = message
                     self.api.buy_id = message["id"]
-                    self.api.timesync.server_timestamp = message["closeTimestamp"]
+                    self.api.timesync.server_timestamp = message[
+                        "closeTimestamp"]
                 elif message.get("ticket"):
                     self.api.sold_options_respond = message
                 elif message.get("deals"):
                     for deal in message["deals"]:
-                        request_id = self.api.get_request_id_from_order_id(deal["id"])
+                        request_id = self.api.get_request_id_from_order_id(
+                            deal["id"])
                         if request_id:
                             self.api.orders[request_id]["result"] = deal
                             self.api.orders[request_id]["status"] = (
                                 DEAL_STATUS_WIN
-                                if deal["profit"] > 0
-                                else DEAL_STATUS_LOSS
-                            )
+                                if deal["profit"] > 0 else DEAL_STATUS_LOSS)
 
                         self.api.profit_in_operation = deal["profit"]
                         deal["win"] = True if message["profit"] > 0 else False
                         deal["game_state"] = 1
-                        self.api.listinfodata.set(
-                            deal["win"], deal["game_state"], deal["id"]
-                        )
+                        self.api.listinfodata.set(deal["win"],
+                                                  deal["game_state"],
+                                                  deal["id"])
                 elif message.get("isDemo") and message.get("balance"):
                     self.api.training_balance_edit_request = message
                 elif message.get("error"):
@@ -134,36 +136,40 @@ class WebsocketClient(object):
                 global_value.check_websocket_if_connect = 0
             if "51-" in str(message):
                 self.api._temp_status = str(message)
-            elif (
-                self.api._temp_status
-                == """451-["settings/list",{"_placeholder":true,"num":0}]"""
-            ):
+            elif (self.api._temp_status ==
+                  """451-["settings/list",{"_placeholder":true,"num":0}]"""):
                 self.api.settings_list = message
                 self.api._temp_status = ""
-            elif (
-                self.api._temp_status
-                == """451-["history/list/v2",{"_placeholder":true,"num":0}]"""
-            ):
+            elif (self.api._temp_status ==
+                  """451-["history/list/v2",{"_placeholder":true,"num":0}]"""):
                 if message.get("asset") == self.api.current_asset:
                     # self.api.candles.candles_data = message["history"]
                     self.api.candle_v2_data[message["asset"]] = message
-                    self.api.candle_v2_data[message["asset"]]["candles"] = [
-                        {
-                            "time": candle[0],
-                            "open": candle[1],
-                            "close": candle[2],
-                            "high": candle[3],
-                            "low": candle[4],
-                            "ticks": candle[5],
-                        }
-                        for candle in message["candles"]
-                    ]
+                    self.api.candle_v2_data[message["asset"]]["candles"] = [{
+                        "time":
+                        candle[0],
+                        "open":
+                        candle[1],
+                        "close":
+                        candle[2],
+                        "high":
+                        candle[3],
+                        "low":
+                        candle[4],
+                        "ticks":
+                        candle[5],
+                    } for candle in message["candles"]]
             elif len(message[0]) == 4:
                 result = {"time": message[0][1], "price": message[0][2]}
                 self.api.realtime_price[message[0][0]].append(result)
             elif len(message[0]) == 2:
                 for i in message:
-                    result = {"sentiment": {"sell": 100 - int(i[1]), "buy": int(i[1])}}
+                    result = {
+                        "sentiment": {
+                            "sell": 100 - int(i[1]),
+                            "buy": int(i[1])
+                        }
+                    }
                     self.api.realtime_sentiment[i[0]] = result
         except:
             pass
