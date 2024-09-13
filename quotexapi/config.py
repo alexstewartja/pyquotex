@@ -1,7 +1,7 @@
+import configparser
+import json
 import os
 import sys
-import json
-import configparser
 from pathlib import Path
 
 USER_AGENT = "Mozilla/5.0 (X11; Linux x86_64; rv:129.0) Gecko/20100101 Firefox/129.0"

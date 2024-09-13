@@ -1,17 +1,17 @@
-import time
-import logging
 import asyncio
+import logging
+import time
 from datetime import datetime
 from typing import Optional
+
 from typing_extensions import deprecated
 
-from . import expiration
-from . import global_value
+from . import expiration, global_value
 from .api import QuotexAPI
-from .constants import codes_asset, DEAL_STATUS_WIN
+from .config import load_session, resource_path, update_session
+from .constants import DEAL_STATUS_WIN, codes_asset
 from .expiration import get_timestamp
 from .utils.services import truncate
-from .config import load_session, update_session, resource_path
 
 __version__ = "1.0.0"
 logger = logging.getLogger(__name__)

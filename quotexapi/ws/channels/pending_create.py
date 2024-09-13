@@ -1,12 +1,10 @@
 import json
+
 from _datetime import datetime
 
+from quotexapi.expiration import (get_expiration_time_quotex, get_timestamp,
+                                  timestamp_to_date)
 from quotexapi.ws.channels.base import Base
-from quotexapi.expiration import (
-    get_expiration_time_quotex,
-    timestamp_to_date,
-    get_timestamp,
-)
 
 
 class PendingCreate(Base):

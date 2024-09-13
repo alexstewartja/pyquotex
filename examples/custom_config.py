@@ -1,5 +1,6 @@
 import asyncio
 import logging
+
 from quotexapi.stable_api import Quotex
 
 logging.basicConfig(level=logging.DEBUG, format="%(asctime)s %(message)s")

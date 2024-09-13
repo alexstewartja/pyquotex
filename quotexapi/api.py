@@ -1,40 +1,39 @@
 """Module for Quotex websocket."""
 
-import os
-import sys
-import time
 import json
-import ssl
-import uuid
-from random import randint
-
-import urllib3
-import requests
-import certifi
 import logging
+import os
 import platform
+import ssl
+import sys
 import threading
+import time
+import uuid
+from collections import defaultdict
+from random import randint
 from typing import Optional
 
+import certifi
+import requests
+import urllib3
 from setuptools.command.alias import alias
 from typing_extensions import deprecated
 
-from . import global_value, expiration
+from . import expiration, global_value
 from .expiration import get_expiration_time_quotex
 from .http.login import Login
 from .http.logout import Logout
-from .http.settings import Settings
 from .http.navigator import Browser
-from .ws.channels.ssid import Ssid
+from .http.settings import Settings
 from .ws.channels.buy import Buy
 from .ws.channels.candles import GetCandles
 from .ws.channels.sell_option import SellOption
-from .ws.objects.timesync import TimeSync
-from .ws.objects.candles import Candles
-from .ws.objects.profile import Profile
-from .ws.objects.listinfodata import ListInfoData
+from .ws.channels.ssid import Ssid
 from .ws.client import WebsocketClient
-from collections import defaultdict
+from .ws.objects.candles import Candles
+from .ws.objects.listinfodata import ListInfoData
+from .ws.objects.profile import Profile
+from .ws.objects.timesync import TimeSync
 
 urllib3.disable_warnings()
 logger = logging.getLogger(__name__)

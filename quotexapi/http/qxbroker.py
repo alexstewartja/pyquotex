@@ -1,11 +1,11 @@
 import asyncio
+import json
 import os
 import re
-import json
+from pathlib import Path
 from random import randint
 
 import requests
-from pathlib import Path
 from bs4 import BeautifulSoup
 from seleniumbase import SB, BaseCase
 

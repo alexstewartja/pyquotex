@@ -1,12 +1,14 @@
-import os
-import sys
-import json
-import time
-import random
 import asyncio
-import pyfiglet
+import json
+import os
+import random
+import sys
+import time
 from pathlib import Path
-from quotexapi.config import email, password, email_pass, user_data_dir
+
+import pyfiglet
+
+from quotexapi.config import email, email_pass, password, user_data_dir
 from quotexapi.stable_api import Quotex
 
 __author__ = "Cleiton Leonel Creton"
