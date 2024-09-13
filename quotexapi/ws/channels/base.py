@@ -1,3 +1,6 @@
+from typing import Optional
+
+
 class Base(object):
     """Class for base Quotex websocket channel."""
 
@@ -6,7 +9,8 @@ class Base(object):
         :param api: The instance of :class:`QuotexAPI
             <quotexapi.api.QuotexAPI>`.
         """
-        self.api = api
+        from quotexapi.api import QuotexAPI
+        self.api: QuotexAPI = api
 
     def send_websocket_request(self, data):
         """Send request to Quotex server websocket.
@@ -14,3 +18,6 @@ class Base(object):
         :returns: The instance of :class:`requests.Response`.
         """
         return self.api.send_websocket_request(data)
+
+    def send_wss_payload(self, action: str, payload: Optional[str | dict] = None, no_force_send=True):
+        return self.api.send_wss_payload(action, payload, no_force_send)

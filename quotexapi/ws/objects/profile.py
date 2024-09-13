@@ -12,6 +12,9 @@ class Profile(Base):
         self.__avatar = None
         self.__country = None
         self.__country_name = None
+        self.__country_ip = None
+        self.__lang = None
+        self.__time_offset = None
         self.__live_balance = None
         self.__demo_balance = None
         self.__msg = None
@@ -118,8 +121,38 @@ class Profile(Base):
         self.__country_name = country_name
 
     @property
+    def country_ip(self):
+        return self.__country_ip
+
+    @country_ip.setter
+    def country_ip(self, country_ip):
+        self.__country_ip = country_ip
+
+    @property
+    def lang(self):
+        return self.__lang
+
+    @lang.setter
+    def lang(self, lang):
+        self.__lang = lang
+
+    @property
+    def time_offset(self):
+        return self.__time_offset
+
+    @time_offset.setter
+    def time_offset(self, time_offset):
+        self.__time_offset = time_offset
+
+    @property
     def minimum_amount(self):
         return self.__minimum_amount
+
+    @minimum_amount.setter
+    def minimum_amount(self, minimum_amount):
+        if self.__currency_code.upper() == "BRL":
+            minimum_amount = 5
+        self.__minimum_amount = minimum_amount
 
     @property
     def currency_code(self):

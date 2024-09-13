@@ -4,13 +4,22 @@ import sys
 import time
 import json
 import ssl
+import uuid
+from random import randint
+
 import urllib3
 import requests
 import certifi
 import logging
 import platform
 import threading
-from . import global_value
+from typing import Optional
+
+from setuptools.command.alias import alias
+from typing_extensions import deprecated
+
+from . import global_value, expiration
+from .expiration import get_expiration_time_quotex
 from .http.login import Login
 from .http.logout import Logout
 from .http.settings import Settings
@@ -54,6 +63,7 @@ class QuotexAPI(object):
     """Class for communication with Quotex API."""
     socket_option_opened = {}
     buy_id = None
+    orders = {}
     trace_ws = False
     buy_expiration = None
     current_asset = None
@@ -77,6 +87,9 @@ class QuotexAPI(object):
                  password,
                  lang,
                  email_pass=None,
+                 imap_username=None,
+                 imap_server_host=None,
+                 imap_server_port=None,
                  proxies=None,
                  resource_path=None,
                  user_data_dir="."):
@@ -86,7 +99,11 @@ class QuotexAPI(object):
         :param str password: The password of a Quotex server.
         :param str lang: The lang of a Quotex platform.
         :param str email_pass: The password of a Email.
+        :param str imap_username: 
+        :param str imap_server_host: 
+        :param int imap_server_port: 
         :param proxies: The proxies of a Quotex server.
+        :param str|Path resource_path:
         :param user_data_dir: The path browser user data dir.
         """
         self.host = host
@@ -103,10 +120,14 @@ class QuotexAPI(object):
         self.username = username
         self.password = password
         self.email_pass = email_pass
+        self.imap_username = imap_username
+        self.imap_server_host = imap_server_host
+        self.imap_server_port = imap_server_port
         self.resource_path = resource_path
         self.user_data_dir = user_data_dir
         self.proxies = proxies
         self.lang = lang
+        self.timezone_offset = 0000
         self.settings_list = {}
         self.signal_data = {}
         self.get_candle_data = {}
@@ -125,48 +146,89 @@ class QuotexAPI(object):
         """
         return self.websocket_client.wss
 
-    def subscribe_realtime_candle(self, asset, period):
+    def tick(self):
+        self.send_wss_payload('tick')
+
+    def subscribe_realtime_candle(self, asset, period: int = 60):
         self.realtime_price[asset] = []
-        payload = {
-            "asset": asset,
-            "period": period
-        }
-        data = f'42["instruments/update", {json.dumps(payload)}]'
-        return self.send_websocket_request(data)
+        return self.send_wss_payload('instruments/update', {"asset": asset, "period": period})
+
+    def follow_asset(self, asset):
+        return self.send_wss_payload('instruments/follow', asset)
 
     def follow_candle(self, asset):
-        data = f'42["depth/follow", {json.dumps(asset)}]'
-        return self.send_websocket_request(data)
+        return self.send_wss_payload('depth/follow', asset)
 
     def unfollow_candle(self, asset):
-        data = f'42["depth/unfollow", {json.dumps(asset)}]'
-        return self.send_websocket_request(data)
+        return self.send_wss_payload('depth/unfollow', asset)
 
     def unsubscribe_realtime_candle(self, asset):
-        data = f'42["subfor", {json.dumps(asset)}]'
-        return self.send_websocket_request(data)
+        return self.send_wss_payload('subfor', asset)
 
+    def get_chart_notifications(self, asset, version: str = '1.0.0'):
+        self.send_wss_payload('chart_notification/get', {"asset": asset, "version": version})
+
+    def switch_to_asset(self, asset: str, duration: int = 60):
+        exp_time = get_expiration_time_quotex(int(self.timesync.server_timestamp), duration) if '_otc' not in asset else duration
+        payload = {
+            "chartId": "graph",
+            "settings": {
+                "chartId": "graph",
+                "chartType": 2,
+                "currentExpirationTime": exp_time,
+                "isFastOption": False,
+                "isFastAmountOption": False,
+                "isIndicatorsMinimized": False,
+                "isIndicatorsShowing": True,
+                "isShortBetElement": False,
+                "chartPeriod": 4,
+                "currentAsset": {
+                    "symbol": asset
+                },
+                "dealValue": 1,
+                "dealPercentValue": 1,
+                "isVisible": True,
+                "timePeriod": duration,
+                "gridOpacity": 8,
+                "isAutoScrolling": 1,
+                "isOneClickTrade": True,
+                "upColor": "#0FAF59",
+                "downColor": "#FF6251"
+            }
+        }
+
+        self.send_wss_payload('settings/store', payload)
+
+    @deprecated('Use `refill_demo_balance(...)` instead')
     def edit_training_balance(self, amount):
-        data = f'42["demo/refill",{json.dumps(amount)}]'
-        self.send_websocket_request(data)
+        self.refill_demo_balance(amount)
+
+    def refill_demo_balance(self, amount):
+        self.send_wss_payload('demo/refill', amount)
 
     def signals_subscribe(self):
-        data = f'42["signal/subscribe"]'
-        self.send_websocket_request(data)
+        self.send_wss_payload('signal/subscribe')
 
+    @deprecated('Use `change_account_type(...)` instead')
     def change_account(self, account_type):
+        self.change_account_type(account_type)
+
+    def change_account_type(self, account_type):
         self.account_type = account_type
-        payload = {
-            "demo": self.account_type,
-            "tournamentId": 0
-        }
-        data = f'42["account/change",{json.dumps(payload)}]'
-        self.send_websocket_request(data)
+        self.send_wss_payload('account/change', {"demo": self.account_type, "tournamentId": 0})
 
     def indicators(self):
         # 42["indicator/change",{"id":"Y5zYtYaUtjI6eUz06YlGF","settings":{"lines":{"main":{"lineWidth":1,"color":"#db4635"}},"ma":"SMA","period":10}}]
         # 42["indicator/delete", {"id": "23507dc2-05ca-4aec-9aef-55939735b3e0"}]
         pass
+
+    def simulate_asset_switch(self, asset: str, duration: int = 60, version='1.0.0'):
+        self.tick()
+        self.subscribe_realtime_candle(asset, duration)
+        self.get_chart_notifications(asset, version)
+        self.unfollow_candle(asset)
+        self.follow_candle(asset)
+        self.switch_to_asset(asset, duration)
 
     @property
     def logout(self):
@@ -260,24 +322,30 @@ class QuotexAPI(object):
             return None
         return response
 
-    async def get_profile(self):
-        settings = Settings(self)
-        user_settings = settings.get_settings()
-        self.profile.nick_name = user_settings.get("data")["nickname"]
-        self.profile.profile_id = user_settings.get("data")["id"]
-        self.profile.demo_balance = user_settings.get("data")["demoBalance"]
-        self.profile.live_balance = user_settings.get("data")["liveBalance"]
-        self.profile.avatar = user_settings.get("data")["avatar"]
-        self.profile.currency_code = user_settings.get("data")["currencyCode"]
-        self.profile.country = user_settings.get("data")["country"]
-        self.profile.country_name = user_settings.get("data")["countryName"]
-        self.profile.currency_symbol = user_settings.get("data")["currencySymbol"]
+    def get_profile(self, force=True) -> Profile:
+        if not self.profile.profile_id or force:
+            profile_data = Settings(self).get_settings().get("data")
+            self.profile.nick_name = profile_data["nickname"]
+            self.profile.profile_id = profile_data["id"]
+            self.profile.demo_balance = profile_data["demoBalance"]
+            self.profile.live_balance = profile_data["liveBalance"]
+            self.profile.avatar = profile_data["avatar"]
+            self.profile.country = profile_data["country"]
+            self.profile.country_name = profile_data["countryName"]
+            self.profile.country_ip = profile_data["countryIp"]
+            self.profile.lang = profile_data["lang"]
+            self.profile.time_offset = profile_data["timeOffset"]
+            self.timezone_offset = profile_data["timeOffset"]
+            self.profile.minimum_amount = profile_data["minDealAmount"]
+            self.profile.currency_code = profile_data["currencyCode"]
+            self.profile.currency_symbol = profile_data["currencySymbol"]
+            self.profile.profile_level = profile_data["profileLevel"]
         return self.profile
 
     def send_websocket_request(self, data, no_force_send=True):
         """Send websocket request to Quotex server.
         :param str data: The websocket request data.
-        :param bool no_force_send: Default None.
+        :param bool no_force_send: Default True.
         """
         while (global_value.ssl_Mutual_exclusion
                or global_value.ssl_Mutual_exclusion_write) and no_force_send:
@@ -287,26 +355,56 @@ class QuotexAPI(object):
         logger.debug(data)
         global_value.ssl_Mutual_exclusion_write = False
 
+    def send_wss_payload(self, action: str, payload: Optional[str | dict] = None, no_force_send=True):
+        """
+        Convenience method to send a payload over websocket to Quotex server.
+        :param str action: wss action being performed, ex. "tick"
+        :param Any payload: json/dict payload to send with specified action
+        :param bool no_force_send: Specify whether to wait for write lock
+        """
+        data = f'42["{action}"%payload%]'
+
+        if payload is not None:
+            if not isinstance(payload, str):
+                payload = json.dumps(payload)
+            data.replace('%payload%', f',{payload}')
+        else:
+            data.replace('%payload%', '')
+
+        return self.send_websocket_request(data, no_force_send)
+
+    @deprecated('Use `authenticate(...)` instead')
     async def autenticate(self):
-        print("Autenticando usuário...")
+        await self.authenticate()
+
+    async def authenticate(self):
+        print("Authenticating user...")
+        logger.info("Authenticating user...")
         status, message = await self.login(
             self.username,
             self.password,
             self.email_pass,
+            self.imap_username,
+            self.imap_server_host,
+            self.imap_server_port,
             self.user_data_dir
         )
         print(message)
         if not status:
+            print("Authentication failed. Exiting...")
+            logger.info("Authentication failed. Exiting...")
             sys.exit(1)
         global_value.SSID = self.session_data.get("token")
         self.is_logged = True
+
+
 
     async def start_websocket(self):
         global_value.check_websocket_if_connect = None
         global_value.check_websocket_if_error = False
         global_value.websocket_error_reason = None
         if not global_value.SSID:
-            await self.autenticate()
+            await self.authenticate()
         self.websocket_client = WebsocketClient(self)
         payload = {
             "ping_interval": 24,
@@ -321,8 +419,7 @@ class QuotexAPI(object):
                 "context": ssl_context
             }
         }
-        if platform.system() == "Linux":
-            payload["sslopt"]["ssl_version"] = ssl.PROTOCOL_TLS
+        payload["sslopt"]["ssl_version"] = ssl.PROTOCOL_TLSv1_2
         self.websocket_thread = threading.Thread(
             target=self.websocket.run_forever,
             kwargs=payload
@@ -333,15 +430,15 @@ class QuotexAPI(object):
             if global_value.check_websocket_if_error:
                 return False, global_value.websocket_error_reason
             elif global_value.check_websocket_if_connect == 0:
-                logger.debug("Websocket conexão fechada.")
-                return False, "Websocket conexão fechada."
+                logger.debug("Websocket connection failed.")
+                return False, "Websocket connection failed."
             elif global_value.check_websocket_if_connect == 1:
-                logger.debug("Websocket conectado com sucesso!!!")
-                return True, "Websocket conectado com sucesso!!!"
+                logger.debug("Websocket connection successful!")
+                return True, "Websocket connection successful!"
             elif global_value.check_rejected_connection == 1:
                 global_value.SSID = None
-                logger.debug("Websocket Token Rejeitado.")
-                return True, "Websocket Token Rejeitado."
+                logger.debug("Websocket token rejected.")
+                return True, "Websocket token rejected."
 
     def send_ssid(self, timeout=10):
         self.wss_message = None
@@ -368,14 +465,14 @@ class QuotexAPI(object):
             return check_websocket, websocket_reason
         check_ssid = self.send_ssid()
         if not check_ssid:
-            await self.autenticate()
+            await self.authenticate()
             if self.is_logged:
                 self.send_ssid()
         return check_websocket, websocket_reason
 
     async def reconnect(self):
         """Method for connection to Quotex API."""
-        logger.info("Websocket Reconnection...")
+        logger.info("Reconnecting websocket...")
         await self.start_websocket()
 
     def close(self):
@@ -386,3 +483,28 @@ class QuotexAPI(object):
 
     def websocket_alive(self):
         return self.websocket_thread.is_alive()
+
+    def generate_request_id(self):
+        generate_pseudo_random_id = lambda: expiration.get_timestamp() + randint(1, 100)
+        request_id = generate_pseudo_random_id()
+        while request_id in self.orders:
+            request_id = generate_pseudo_random_id()
+        return request_id
+
+    def get_order_by_id(self, order_id=None, request_id=None) -> Optional[dict]:
+        if order_id is not None:
+            for request_id, order in self.orders:
+                if 'id' in order and order['id'] == order_id:
+                    return order
+        elif request_id is not None:
+            return self.orders[request_id] if request_id in self.orders else None
+
+        return None
+
+    def get_request_id_from_order_id(self, order_id) -> Optional[str]:
+        order = self.get_order_by_id(order_id=order_id)
+
+        if order is not None:
+            return order['request']['requestId']
+
+        return None

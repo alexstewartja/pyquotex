@@ -8,60 +8,30 @@ class Buy(Base):
 
     name = "buy"
 
-    def __call__(self, price, asset, direction, duration, request_id):
+    def __call__(self, price, asset, direction, duration, request_id, tournament_id=0):
+        _duration = duration
         option_type = 100
         if "_otc" not in asset:
             option_type = 1
             duration = get_expiration_time_quotex(
                 int(self.api.timesync.server_timestamp),
-                duration
+                _duration
             )
 
-        data = f'42["depth/follow", f"{asset}"]'
-        self.send_websocket_request(data)
-
-        payload = {
-            "chartId": "graph",
-            "settings": {
-                "chartId": "graph",
-                "chartType": 2,
-                "currentExpirationTime": duration,
-                "isFastOption": False,
-                "isFastAmountOption": False,
-                "isIndicatorsMinimized": False,
-                "isIndicatorsShowing": True,
-                "isShortBetElement": False,
-                "chartPeriod": 4,
-                "currentAsset": {
-                    "symbol": asset
-                },
-                "dealValue": 5,
-                "dealPercentValue": 1,
-                "isVisible": True,
-                "timePeriod": 30,
-                "gridOpacity": 8,
-                "isAutoScrolling": 1,
-                "isOneClickTrade": True,
-                "upColor": "#0FAF59",
-                "downColor": "#FF6251"
-            }
-        }
-        data = f'42["settings/store",{json.dumps(payload)}]'
-        self.send_websocket_request(data)
+        self.api.simulate_asset_switch(asset, _duration)
 
         payload = {
             "asset": asset,
             "amount": price,
             "time": duration,
             "action": direction,
-            "isDemo": self.api.account_type,
-            "tournamentId": 0,
+            "isDemo": (0 if tournament_id > 0 else self.api.account_type),
+            "tournamentId": tournament_id,
             "requestId": request_id,
             "optionType": option_type
         }
 
-        data = f'42["tick"]'
-        self.send_websocket_request(data)
-
-        data = f'42["orders/open",{json.dumps(payload)}]'
-        self.send_websocket_request(data)
+        self.api.tick()
+        wss_action = 'orders/tournament/open' if tournament_id > 0 else 'orders/open'
+        self.send_wss_payload(wss_action, payload)
+        self.api.orders[request_id]['request'] = payload

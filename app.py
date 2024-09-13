@@ -22,7 +22,7 @@ Use com moderação, pois gerenciamento é tudo!
 suporte: cleiton.leonel@gmail.com ou +55 (27) 9 9577-2291
 """
 
-USER_AGENT = "Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:109.0) Gecko/20100101 Firefox/119.0"
+USER_AGENT = "Mozilla/5.0 (X11; Linux x86_64; rv:129.0) Gecko/20100101 Firefox/129.0"
 
 custom_font = pyfiglet.Figlet(font="ansi_shadow")
 ascii_art = custom_font.renderText("PyQuotex")

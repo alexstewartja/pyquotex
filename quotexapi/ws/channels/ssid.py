@@ -12,10 +12,8 @@ class Ssid(Base):
 
         :param ssid: The session identifier.
         """
-        payload = {
+        self.send_wss_payload('authorization', {
             "session": ssid,
             "isDemo": self.api.account_type,
             "tournamentId": 0
-        }
-        data = f'42["authorization",{json.dumps(payload)}]'
-        self.send_websocket_request(data)
+        })

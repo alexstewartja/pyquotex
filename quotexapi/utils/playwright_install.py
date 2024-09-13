@@ -26,7 +26,7 @@ def install(
     args = [driver_executable, "install-deps"]
     env = None
     if browser_type:
-        args = [driver_executable, "install", browser_type.name]
+        args = ["playwright", "install", browser_type.name]
         env = get_driver_env()
         if with_deps:
             args.append("--with-deps")
