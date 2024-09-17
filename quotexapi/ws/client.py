@@ -1,4 +1,5 @@
 """Module for Quotex websocket."""
+import asyncio
 import json
 import logging
 import time
@@ -25,9 +26,19 @@ class WebsocketClient(object):
 
         self.api: QuotexAPI = api
         self.headers = {
-            "User-Agent": self.api.session_data.get("user_agent"),
-            "Origin": self.api.https_url,
-            "Host": f"ws2.{self.api.host}",
+            "Accept": "*/*",
+            "Accept-Encoding": "gzip, deflate, br, zstd",
+            "Cache-Control": "no-cache",
+            "Connection": "keep-alive, Upgrade",
+            "DNT": "1",
+            "Pragma": "no-cache",
+            "Sec-Fetch-Dest": "empty",
+            "Sec-Fetch-Mode": "websocket",
+            "Sec-Fetch-Site": "same-site",
+            "Sec-GPC": "1",
+            "Sec-WebSocket-Extensions": "permessage-deflate; client_max_window_bits",
+            "Upgrade": "websocket",
+            "User-Agent": self.api.session_data.get("user_agent")
         }
 
         websocket.enableTrace(self.api.trace_ws)
@@ -51,9 +62,7 @@ class WebsocketClient(object):
 
         """
         global_value.ssl_Mutual_exclusion = True
-        current_time = time.localtime()
-        if current_time.tm_sec in [0, 20, 40]:
-            self.api.tick()
+        self.api.tick()
         try:
             if "authorization/reject" in str(message):
                 logger.info("Token rejeitado, fazendo reconexão automática.")
@@ -147,17 +156,17 @@ class WebsocketClient(object):
                     self.api.candle_v2_data[message["asset"]] = message
                     self.api.candle_v2_data[message["asset"]]["candles"] = [{
                         "time":
-                        candle[0],
+                            candle[0],
                         "open":
-                        candle[1],
+                            candle[1],
                         "close":
-                        candle[2],
+                            candle[2],
                         "high":
-                        candle[3],
+                            candle[3],
                         "low":
-                        candle[4],
+                            candle[4],
                         "ticks":
-                        candle[5],
+                            candle[5],
                     } for candle in message["candles"]]
             elif len(message[0]) == 4:
                 result = {"time": message[0][1], "price": message[0][2]}
@@ -196,6 +205,11 @@ class WebsocketClient(object):
         logger.info("Websocket client connected.")
         global_value.check_websocket_if_connect = 1
         self.warm_up()
+        asyncio.get_event_loop().create_task(self.start_pinging())
+
+    async def start_pinging(self):
+        while True: await asyncio.sleep(1); print('Pinging...'); self.wss.send("2")
+        
 
     def on_close(self, wss, close_status_code, close_msg):
         """Method to process websocket close.

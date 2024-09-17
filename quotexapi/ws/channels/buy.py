@@ -14,7 +14,7 @@ class Buy(Base):
                  asset,
                  direction,
                  duration,
-                 request_id,
+                 request_id=None,
                  tournament_id=0):
         _duration = duration
         option_type = 100
@@ -35,8 +35,7 @@ class Buy(Base):
             "requestId": request_id,
             "optionType": option_type,
         }
-
-        self.api.tick()
         wss_action = "orders/tournament/open" if tournament_id > 0 else "orders/open"
         self.send_wss_payload(wss_action, payload)
+        self.api.orders[request_id] = {}
         self.api.orders[request_id]["request"] = payload

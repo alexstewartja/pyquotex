@@ -102,7 +102,9 @@ class Quotex(object):
     def set_session(self,
                     user_agent: str,
                     cookies: str = None,
-                    ssid: str = None):
+                    ssid: str = None,
+                    headers: dict = None
+                    ):
         """
 
         :param user_agent: str:
@@ -110,7 +112,7 @@ class Quotex(object):
         :param ssid: str:  (Default value = None)
 
         """
-        session = {"cookies": cookies, "token": ssid, "user_agent": user_agent}
+        session = {"cookies": cookies, "token": ssid, "user_agent": user_agent, "headers": headers}
         self.session_data = update_session(session)
 
     async def re_subscribe_stream(self):

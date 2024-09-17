@@ -119,6 +119,7 @@ class QuotexAPI(object):
         self.host = host
         self.https_url = f"https://{host}"
         self.wss_url = f"wss://ws2.{host}/socket.io/?EIO=3&transport=websocket"
+        self.last_tick_sec = None
         self.wss_message = None
         self.websocket_thread = None
         self.websocket_client = None
@@ -160,7 +161,15 @@ class QuotexAPI(object):
 
     def tick(self):
         """ """
+        if self.last_tick_sec is None:
+            tm_sec_diff = None
+        else:
+            self.last_tick_sec = self.last_tick_sec or time.localtime().tm_sec
+            tm_sec_diff = (time.localtime().tm_sec - self.last_tick_sec)
+        if tm_sec_diff is not None and tm_sec_diff > 0 < 10:
+            return
         self.send_wss_payload("tick")
+        self.last_tick_sec = time.localtime().tm_sec
 
     def subscribe_realtime_candle(self, asset, period: int = 60):
         """
@@ -499,12 +508,12 @@ class QuotexAPI(object):
         """
         data = f'42["{action}"%payload%]'
 
-        if payload is not None:
-            if not isinstance(payload, str):
+        if payload is not None and payload:
+            if isinstance(payload, dict):
                 payload = json.dumps(payload)
-            data.replace("%payload%", f",{payload}")
+            data = data.replace('%payload%', f",{payload}")
         else:
-            data.replace("%payload%", "")
+            data = data.replace('%payload%', '')
 
         return self.send_websocket_request(data, no_force_send)
 
@@ -644,12 +653,11 @@ class QuotexAPI(object):
 
         """
         if order_id is not None:
-            for request_id, order in self.orders:
+            for request_id, order in self.orders.items():
                 if "id" in order and order["id"] == order_id:
                     return order
         elif request_id is not None:
-            return self.orders[
-                request_id] if request_id in self.orders else None
+            return self.orders[request_id] if request_id in self.orders else None
 
         return None
 
